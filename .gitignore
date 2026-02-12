@@ -1,0 +1,28 @@
+# --- Ejecutables y Compilados ---
+main
+*.o
+
+# --- Archivos generados por ANTLR (C++) ---
+# Queremos ignorar los Lexer, Parser, Visitors generados, 
+# pero NO tu gramática (Calc.g4) ni tu main.cpp
+CalcLexer.h
+CalcLexer.cpp
+CalcParser.h
+CalcParser.cpp
+CalcVisitor.h
+CalcVisitor.cpp
+CalcBaseVisitor.h
+CalcBaseVisitor.cpp
+
+# --- Archivos auxiliares de ANTLR ---
+*.interp
+*.tokens
+
+# --- Archivos generados si usaste Java (grun) ---
+*.java
+*.class
+
+# --- Otros / Temporales ---
+.DS_Store
+.vscode/
+_antlr

@@ -1,0 +1,766 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R /F3 4 0 R /F4 6 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Times-Roman /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/BaseFont /Courier /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
+>>
+endobj
+5 0 obj
+<<
+/Contents 11 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Parent 10 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+6 0 obj
+<<
+/BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding /Name /F4 /Subtype /Type1 /Type /Font
+>>
+endobj
+7 0 obj
+<<
+/Contents 12 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Parent 10 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+8 0 obj
+<<
+/PageLabels 13 0 R /PageMode /UseNone /Pages 10 0 R /Type /Catalog
+>>
+endobj
+9 0 obj
+<<
+/Author () /CreationDate (D:20260211122822+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260211122822+00'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+  /Subject (\(unspecified\)) /Title (Main methods to handle ANTLR ParseTree nodes) /Trapped /False
+>>
+endobj
+10 0 obj
+<<
+/Count 2 /Kids [ 5 0 R 7 0 R ] /Type /Pages
+>>
+endobj
+11 0 obj
+<<
+/Length 4440
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 57.02362 494.4094 cm
+q
+.133333 .133333 .133333 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL 162.8413 0 Td (Main methods to handle ANTLR ParseTree nodes) Tj T* -162.8413 0 Td ET
+Q
+Q
+q
+1 0 0 1 57.02362 446.4094 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (ANTLR generates a visitor method for each rule in the grammar. The visitor method looks like:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 413.2094 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 726.6425 24 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (std::any visitRULE\(AslParser::RULEContext *ctx\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 393.2094 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (where ) Tj /F3 10 Tf (RULE) Tj /F1 10 Tf ( is the name of the rule.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 375.2094 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (The parameter of each visitor method is a pointer ) Tj /F3 10 Tf (ctx) Tj /F1 10 Tf ( to an object of class ) Tj /F3 10 Tf (RULEContext) Tj /F1 10 Tf (, which is derived from ANTLR class ) Tj /F3 10 Tf (ParseRuleContext) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 357.2094 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (The pointer ) Tj /F3 10 Tf (ctx) Tj /F1 10 Tf ( allows access to information in the node currently being visited, and to its children.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 339.2094 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (For instance, if our grammar contains the rule:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 306.0094 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 726.6425 24 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (expr : expr \(MUL|DIV\) expr) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 286.0094 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (then our visitor will have a method:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 252.8094 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 726.6425 24 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (std::any visitExpr\(AslParser::ExprContext *ctx\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 232.8094 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Inside this method we can, for instance:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 226.8094 cm
+Q
+q
+1 0 0 1 57.02362 226.8094 cm
+Q
+q
+1 0 0 1 57.02362 183.6094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 28.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 28.2 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Check whether the node has a ) Tj /F3 10 Tf (MUL) Tj /F1 10 Tf ( child:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 22.2 cm
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 683.6425 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (if \(ctx-) Tj (>) Tj (MUL\(\)\) ...) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 177.6094 cm
+Q
+q
+1 0 0 1 57.02362 108.4094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 54.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 54.2 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Get the string that matched the ) Tj /F3 10 Tf (MUL) Tj /F1 10 Tf ( regex:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 48.2 cm
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 26 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 683.6425 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (ctx-) Tj (>) Tj (MUL\(\)-) Tj (>) Tj (getText\(\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (\(not very useful for ) Tj /F3 10 Tf (MUL) Tj /F1 10 Tf (, but very useful e.g. for ) Tj /F3 10 Tf (ID) Tj /F1 10 Tf ( or ) Tj /F3 10 Tf (INTVAL) Tj /F1 10 Tf (\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 102.4094 cm
+Q
+q
+1 0 0 1 57.02362 84.40945 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Check whether the rule has some ) Tj /F3 10 Tf (expr) Tj /F1 10 Tf ( child:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+Q
+ 
+endstream
+endobj
+12 0 obj
+<<
+/Length 5194
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 57.02362 493.2094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 6 12.2 Tm  T* ET
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 674.6425 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (if \(ctx-) Tj (>) Tj (expr\(\)\)...) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 487.2094 cm
+Q
+q
+1 0 0 1 57.02362 414.0094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 58.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 58.2 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Get how many ) Tj /F3 10 Tf (expr) Tj /F1 10 Tf ( children the rule has:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 52.2 cm
+Q
+q
+1 0 0 1 23 27 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 683.6425 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (ctx-) Tj (>) Tj (expr\(\).size\(\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 27 cm
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm .307207 Tw 12 TL /F1 10 Tf 0 0 0 rg (Note: Only when more than one ) Tj /F3 10 Tf (expr) Tj /F1 10 Tf ( are expected in the rule/subrule, ) Tj /F3 10 Tf (ctx-) Tj (>) Tj (expr\(\)) Tj /F1 10 Tf ( is a ) Tj /F3 10 Tf (std::vector) Tj (<) Tj (ParseRuleContext) Tj (>) Tj /F1 10 Tf (. Otherwise, ) Tj /F3 10 Tf (ctx-) Tj (>) Tj (expr\(\)) Tj /F1 10 Tf  T* 0 Tw (is ) Tj /F4 10 Tf (the) Tj /F1 10 Tf ( only ) Tj /F3 10 Tf (expr) Tj /F1 10 Tf ( child.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 408.0094 cm
+Q
+q
+1 0 0 1 57.02362 364.8094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 28.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 28.2 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Get the i-th ) Tj /F3 10 Tf (expr) Tj /F1 10 Tf ( child \(counting from 0\):) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 22.2 cm
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 683.6425 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (ctx-) Tj (>) Tj (expr\(i\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 358.8094 cm
+Q
+q
+1 0 0 1 57.02362 315.6094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 28.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 28.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Get the total number of children of any kind:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 22.2 cm
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 683.6425 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (ctx-) Tj (>) Tj (children.size\(\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 309.6094 cm
+Q
+q
+1 0 0 1 57.02362 266.4094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 28.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 28.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Get the i-th child of any kind:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 22.2 cm
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 683.6425 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (ctx-) Tj (>) Tj (children[i]) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 260.4094 cm
+Q
+q
+1 0 0 1 57.02362 151.2094 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 94.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 94.2 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Both ) Tj /F3 10 Tf (ctx-) Tj (>) Tj (expr\(\)) Tj /F1 10 Tf ( and ) Tj /F3 10 Tf (ctx-) Tj (>) Tj (children) Tj /F1 10 Tf ( can be iterated if needed:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 88.2 cm
+Q
+q
+1 0 0 1 23 15 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 683.6425 72 re B*
+Q
+q
+BT 1 0 0 1 0 50 Tm 12 TL /F3 10 Tf 0 0 0 rg (for \(int i=0; i) Tj (<) Tj (ctx-) Tj (>) Tj (expr\(\).size\(\); ++i\) visit\(ctx-) Tj (>) Tj (expr\(i\)\);) Tj T* (for \(auto ex : ctx-) Tj (>) Tj (expr\(\)\) visit\(ex\);) Tj T*  T* (for \(int i=0; i) Tj (<) Tj (ctx-) Tj (>) Tj (children.size\(\); ++i\) visit\(ctx-) Tj (>) Tj (children[i]\);) Tj T* (for \(auto ch : ctx-) Tj (>) Tj (children\) visit\(ch\);) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 23 15 cm
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (The last two iterations are equivalent to a simple call to ) Tj /F3 10 Tf (visitChildren\(ctx\)) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 151.2094 cm
+Q
+ 
+endstream
+endobj
+13 0 obj
+<<
+/Nums [ 0 14 0 R 1 15 0 R ]
+>>
+endobj
+14 0 obj
+<<
+/S /D /St 1
+>>
+endobj
+15 0 obj
+<<
+/S /D /St 2
+>>
+endobj
+xref
+0 16
+0000000000 65535 f 
+0000000073 00000 n 
+0000000134 00000 n 
+0000000241 00000 n 
+0000000350 00000 n 
+0000000455 00000 n 
+0000000660 00000 n 
+0000000775 00000 n 
+0000000980 00000 n 
+0000001068 00000 n 
+0000001369 00000 n 
+0000001435 00000 n 
+0000005927 00000 n 
+0000011173 00000 n 
+0000011223 00000 n 
+0000011257 00000 n 
+trailer
+<<
+/ID 
+[<0c3ec95551953592909e4cf223f4c802><0c3ec95551953592909e4cf223f4c802>]
+% ReportLab generated PDF document -- digest (http://www.reportlab.com)
+
+/Info 9 0 R
+/Root 8 0 R
+/Size 16
+>>
+startxref
+11291
+%%EOF
