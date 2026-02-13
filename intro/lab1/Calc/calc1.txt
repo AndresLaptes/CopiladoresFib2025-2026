@@ -1,7 +1,7 @@
-a = 5
-b = 6
+i = 0
 
-x = 0
-y = 2
+WHILE i < 10
+    i = i + 1
+    i
+ENDWHILE
 
-[a>b ? x+1 : y-2]

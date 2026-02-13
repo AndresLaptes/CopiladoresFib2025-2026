@@ -22,6 +22,21 @@
 // Sample "calculator" (implemented with a visitor)
 class Calculator : public CalcBaseVisitor {
 public:
+    bool evaluarCondicionales(std::string comparador, int left, int right) {
+        static std::map<std::string, int> memoria = {{">", 1}, {"<", 2}, {"==", 3}, {"!=", 4}, {">=", 5}, {"<=", 6}};
+        
+        switch (memoria[comparador]) {
+            case 1: return (bool) (left > right);
+            case 2: return (bool) (left < right);
+            case 3: return (bool) (left == right);
+            case 4: return (bool) (left != right);
+            case 5: return (bool) (left >= right);
+            case 6: return (bool) (left <= right);
+        }
+
+        return false;
+    }
+
   // "memory" for the calculator; variable/value pairs go here
   std::map<std::string, int> memory;
 
@@ -184,37 +199,56 @@ public:
     std::any visitCondicionalCompacto(CalcParser::CondicionalCompactoContext *ctx) {
         std::string operacionCondicion = ctx->OPBIN()->getText();
 
-        static std::map<std::string, int> memoria = {{">", 1}, {"<", 2}, {"==", 3}, {"!=", 4}, {">=", 5}, {"<=", 6}};
         int left = std::any_cast<int>(visit(ctx->expr(0)));
         int right = std::any_cast<int>(visit(ctx->expr(1)));
         
-        bool condicion;
-        switch (memoria[operacionCondicion]) {
-            case 1: 
-                condicion = (left > right);
-                break;
-            case 2: 
-                condicion = (left < right);
-                break;
-            case 3: 
-                condicion = (left == right);
-                break;
-            case 4: 
-                condicion = (left != right);
-                break;
-            case 5: 
-                condicion = (left >= right);
-                break;
-            case 6: 
-                condicion = (left <= right);
-                break;
-        }
+        bool condicion = evaluarCondicionales(operacionCondicion, left, right);
 
         if (condicion) return visit(ctx->expr(2));
         
         return visit(ctx->expr(3));
     }
 
+    std::any visitCondicionalIF(CalcParser::CondicionalIFContext *ctx) {
+        std::string operacionCondicion = ctx->OPBIN()->getText();
+        
+        int left = std::any_cast<int>(visit(ctx->expr(0)));
+        int right = std::any_cast<int>(visit(ctx->expr(1)));
+
+        bool condicion = evaluarCondicionales(operacionCondicion, left, right);
+
+        if (condicion) {
+            for(auto act : ctx->thenStat) {
+                visit(act);
+            }
+        } else {
+            for (auto act : ctx->elseStat) {
+                visit(act);
+            }
+        }
+
+        return 0;
+    }
+
+
+    std::any visitBucleWhile(CalcParser::BucleWhileContext *ctx) {
+        std::string operacionCondicion = ctx->OPBIN()->getText();
+        
+        int left = std::any_cast<int>(visit(ctx->expr(0)));
+        int right = std::any_cast<int>(visit(ctx->expr(1)));
+
+        bool condicion = evaluarCondicionales(operacionCondicion, left, right);
+
+        while (condicion) {
+            for (auto act : ctx->stat()) visit(act);
+            left = std::any_cast<int>(visit(ctx->expr(0)));
+            right = std::any_cast<int>(visit(ctx->expr(1)));
+           
+            condicion = evaluarCondicionales(operacionCondicion, left, right);
+        }
+        
+        return 0;
+    }
 };
 // Sample "calculator" (implemented with a visitor)
 //////////////////////////////////////////////////////////////////////

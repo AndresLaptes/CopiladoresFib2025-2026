@@ -2,7 +2,9 @@ grammar Calc;
 
 prog:  stat+ EOF ;
 
-stat:  expr NEWLINE           # printExpr
+stat:  'IF' expr OPBIN expr NEWLINE thenStat+=stat* 'ENDIF' NEWLINE ('ELSE' elseStat+=stat* 'ENDELSE' NEWLINE)? # condicionalIF
+    | 'WHILE' expr OPBIN expr NEWLINE stat* 'ENDWHILE' # bucleWhile
+    | expr NEWLINE           # printExpr
     |  ID '=' expr NEWLINE    # assign
     |  NEWLINE                # blank
     ;
