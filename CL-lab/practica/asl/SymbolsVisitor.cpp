@@ -121,19 +121,18 @@ std::any SymbolsVisitor::visitVariable_decl(AslParser::Variable_declContext *ctx
 //Refactor con map y switch mas clean
 std::any SymbolsVisitor::visitType(AslParser::TypeContext *ctx) {
   DEBUG_ENTER();
+  TypesMgr::TypeId t;
   if (ctx->INT()) {
-    TypesMgr::TypeId t = Types.createIntegerTy();
-    putTypeDecor(ctx, t);
+    t = Types.createIntegerTy();
   } else if (ctx->BOOL()) {
-    TypesMgr::TypeId t = Types.createBooleanTy();
-    putTypeDecor(ctx, t);
+    t = Types.createBooleanTy();
   } else if (ctx->CHAR()) {
-
-
+    t = Types.createCharacterTy();
   } else if (ctx->FLOAT()) {
-
-
+    t = Types.createFloatTy();
   }
+
+  putTypeDecor(ctx, t);
   DEBUG_EXIT();
   return 0;
 }

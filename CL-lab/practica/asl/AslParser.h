@@ -13,9 +13,10 @@ class  AslParser : public antlr4::Parser {
 public:
   enum {
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, ASSIGN = 5, EQUAL = 6, PLUS = 7, 
-    MUL = 8, VAR = 9, INT = 10, BOOL = 11, IF = 12, THEN = 13, ELSE = 14, 
-    ENDIF = 15, FUNC = 16, ENDFUNC = 17, READ = 18, WRITE = 19, ID = 20, 
-    INTVAL = 21, STRING = 22, COMMENT = 23, WS = 24
+    MINUS = 8, MUL = 9, DIV = 10, VAR = 11, INT = 12, BOOL = 13, FLOAT = 14, 
+    CHAR = 15, IF = 16, THEN = 17, ELSE = 18, ENDIF = 19, FUNC = 20, ENDFUNC = 21, 
+    READ = 22, WRITE = 23, ID = 24, INTVAL = 25, STRING = 26, COMMENT = 27, 
+    WS = 28
   };
 
   enum {
@@ -119,6 +120,8 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *INT();
     antlr4::tree::TerminalNode *BOOL();
+    antlr4::tree::TerminalNode *CHAR();
+    antlr4::tree::TerminalNode *FLOAT();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -262,7 +265,9 @@ public:
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
     antlr4::tree::TerminalNode *MUL();
+    antlr4::tree::TerminalNode *DIV();
     antlr4::tree::TerminalNode *PLUS();
+    antlr4::tree::TerminalNode *MINUS();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

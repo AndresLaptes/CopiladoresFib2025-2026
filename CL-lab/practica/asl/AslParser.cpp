@@ -56,48 +56,49 @@ void aslParserInitialize() {
       "statement", "left_expr", "expr", "ident"
     },
     std::vector<std::string>{
-      "", "'('", "')'", "':'", "';'", "'='", "'=='", "'+'", "'*'", "'var'", 
-      "'int'", "'bool'", "'if'", "'then'", "'else'", "'endif'", "'func'", 
-      "'endfunc'", "'read'", "'write'"
+      "", "'('", "')'", "':'", "';'", "'='", "'=='", "'+'", "'-'", "'*'", 
+      "'/'", "'var'", "'int'", "'bool'", "'float'", "'char'", "'if'", "'then'", 
+      "'else'", "'endif'", "'func'", "'endfunc'", "'read'", "'write'"
     },
     std::vector<std::string>{
-      "", "", "", "", "", "ASSIGN", "EQUAL", "PLUS", "MUL", "VAR", "INT", 
-      "BOOL", "IF", "THEN", "ELSE", "ENDIF", "FUNC", "ENDFUNC", "READ", 
-      "WRITE", "ID", "INTVAL", "STRING", "COMMENT", "WS"
+      "", "", "", "", "", "ASSIGN", "EQUAL", "PLUS", "MINUS", "MUL", "DIV", 
+      "VAR", "INT", "BOOL", "FLOAT", "CHAR", "IF", "THEN", "ELSE", "ENDIF", 
+      "FUNC", "ENDFUNC", "READ", "WRITE", "ID", "INTVAL", "STRING", "COMMENT", 
+      "WS"
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,24,107,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,28,107,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,1,0,4,0,22,8,0,11,0,12,0,23,1,0,1,0,1,1,1,1,1,1,
   	1,1,1,1,1,1,1,1,1,1,1,2,5,2,37,8,2,10,2,12,2,40,9,2,1,3,1,3,1,3,1,3,1,
   	3,1,4,1,4,1,5,5,5,50,8,5,10,5,12,5,53,9,5,1,6,1,6,1,6,1,6,1,6,1,6,1,6,
   	1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,
   	6,1,6,1,6,3,6,82,8,6,1,7,1,7,1,8,1,8,1,8,3,8,89,8,8,1,8,1,8,1,8,1,8,1,
   	8,1,8,1,8,1,8,1,8,5,8,100,8,8,10,8,12,8,103,9,8,1,9,1,9,1,9,0,1,16,10,
-  	0,2,4,6,8,10,12,14,16,18,0,1,1,0,10,11,108,0,21,1,0,0,0,2,27,1,0,0,0,
-  	4,38,1,0,0,0,6,41,1,0,0,0,8,46,1,0,0,0,10,51,1,0,0,0,12,81,1,0,0,0,14,
-  	83,1,0,0,0,16,88,1,0,0,0,18,104,1,0,0,0,20,22,3,2,1,0,21,20,1,0,0,0,22,
-  	23,1,0,0,0,23,21,1,0,0,0,23,24,1,0,0,0,24,25,1,0,0,0,25,26,5,0,0,1,26,
-  	1,1,0,0,0,27,28,5,16,0,0,28,29,5,20,0,0,29,30,5,1,0,0,30,31,5,2,0,0,31,
-  	32,3,4,2,0,32,33,3,10,5,0,33,34,5,17,0,0,34,3,1,0,0,0,35,37,3,6,3,0,36,
-  	35,1,0,0,0,37,40,1,0,0,0,38,36,1,0,0,0,38,39,1,0,0,0,39,5,1,0,0,0,40,
-  	38,1,0,0,0,41,42,5,9,0,0,42,43,5,20,0,0,43,44,5,3,0,0,44,45,3,8,4,0,45,
-  	7,1,0,0,0,46,47,7,0,0,0,47,9,1,0,0,0,48,50,3,12,6,0,49,48,1,0,0,0,50,
-  	53,1,0,0,0,51,49,1,0,0,0,51,52,1,0,0,0,52,11,1,0,0,0,53,51,1,0,0,0,54,
-  	55,3,14,7,0,55,56,5,5,0,0,56,57,3,16,8,0,57,58,5,4,0,0,58,82,1,0,0,0,
-  	59,60,5,12,0,0,60,61,3,16,8,0,61,62,5,13,0,0,62,63,3,10,5,0,63,64,5,15,
-  	0,0,64,82,1,0,0,0,65,66,3,18,9,0,66,67,5,1,0,0,67,68,5,2,0,0,68,69,5,
-  	4,0,0,69,82,1,0,0,0,70,71,5,18,0,0,71,72,3,14,7,0,72,73,5,4,0,0,73,82,
-  	1,0,0,0,74,75,5,19,0,0,75,76,3,16,8,0,76,77,5,4,0,0,77,82,1,0,0,0,78,
-  	79,5,19,0,0,79,80,5,22,0,0,80,82,5,4,0,0,81,54,1,0,0,0,81,59,1,0,0,0,
-  	81,65,1,0,0,0,81,70,1,0,0,0,81,74,1,0,0,0,81,78,1,0,0,0,82,13,1,0,0,0,
-  	83,84,3,18,9,0,84,15,1,0,0,0,85,86,6,8,-1,0,86,89,5,21,0,0,87,89,3,18,
-  	9,0,88,85,1,0,0,0,88,87,1,0,0,0,89,101,1,0,0,0,90,91,10,5,0,0,91,92,5,
-  	8,0,0,92,100,3,16,8,6,93,94,10,4,0,0,94,95,5,7,0,0,95,100,3,16,8,5,96,
-  	97,10,3,0,0,97,98,5,6,0,0,98,100,3,16,8,4,99,90,1,0,0,0,99,93,1,0,0,0,
-  	99,96,1,0,0,0,100,103,1,0,0,0,101,99,1,0,0,0,101,102,1,0,0,0,102,17,1,
-  	0,0,0,103,101,1,0,0,0,104,105,5,20,0,0,105,19,1,0,0,0,7,23,38,51,81,88,
-  	99,101
+  	0,2,4,6,8,10,12,14,16,18,0,3,1,0,12,15,1,0,9,10,1,0,7,8,108,0,21,1,0,
+  	0,0,2,27,1,0,0,0,4,38,1,0,0,0,6,41,1,0,0,0,8,46,1,0,0,0,10,51,1,0,0,0,
+  	12,81,1,0,0,0,14,83,1,0,0,0,16,88,1,0,0,0,18,104,1,0,0,0,20,22,3,2,1,
+  	0,21,20,1,0,0,0,22,23,1,0,0,0,23,21,1,0,0,0,23,24,1,0,0,0,24,25,1,0,0,
+  	0,25,26,5,0,0,1,26,1,1,0,0,0,27,28,5,20,0,0,28,29,5,24,0,0,29,30,5,1,
+  	0,0,30,31,5,2,0,0,31,32,3,4,2,0,32,33,3,10,5,0,33,34,5,21,0,0,34,3,1,
+  	0,0,0,35,37,3,6,3,0,36,35,1,0,0,0,37,40,1,0,0,0,38,36,1,0,0,0,38,39,1,
+  	0,0,0,39,5,1,0,0,0,40,38,1,0,0,0,41,42,5,11,0,0,42,43,5,24,0,0,43,44,
+  	5,3,0,0,44,45,3,8,4,0,45,7,1,0,0,0,46,47,7,0,0,0,47,9,1,0,0,0,48,50,3,
+  	12,6,0,49,48,1,0,0,0,50,53,1,0,0,0,51,49,1,0,0,0,51,52,1,0,0,0,52,11,
+  	1,0,0,0,53,51,1,0,0,0,54,55,3,14,7,0,55,56,5,5,0,0,56,57,3,16,8,0,57,
+  	58,5,4,0,0,58,82,1,0,0,0,59,60,5,16,0,0,60,61,3,16,8,0,61,62,5,17,0,0,
+  	62,63,3,10,5,0,63,64,5,19,0,0,64,82,1,0,0,0,65,66,3,18,9,0,66,67,5,1,
+  	0,0,67,68,5,2,0,0,68,69,5,4,0,0,69,82,1,0,0,0,70,71,5,22,0,0,71,72,3,
+  	14,7,0,72,73,5,4,0,0,73,82,1,0,0,0,74,75,5,23,0,0,75,76,3,16,8,0,76,77,
+  	5,4,0,0,77,82,1,0,0,0,78,79,5,23,0,0,79,80,5,26,0,0,80,82,5,4,0,0,81,
+  	54,1,0,0,0,81,59,1,0,0,0,81,65,1,0,0,0,81,70,1,0,0,0,81,74,1,0,0,0,81,
+  	78,1,0,0,0,82,13,1,0,0,0,83,84,3,18,9,0,84,15,1,0,0,0,85,86,6,8,-1,0,
+  	86,89,5,25,0,0,87,89,3,18,9,0,88,85,1,0,0,0,88,87,1,0,0,0,89,101,1,0,
+  	0,0,90,91,10,5,0,0,91,92,7,1,0,0,92,100,3,16,8,6,93,94,10,4,0,0,94,95,
+  	7,2,0,0,95,100,3,16,8,5,96,97,10,3,0,0,97,98,5,6,0,0,98,100,3,16,8,4,
+  	99,90,1,0,0,0,99,93,1,0,0,0,99,96,1,0,0,0,100,103,1,0,0,0,101,99,1,0,
+  	0,0,101,102,1,0,0,0,102,17,1,0,0,0,103,101,1,0,0,0,104,105,5,24,0,0,105,
+  	19,1,0,0,0,7,23,38,51,81,88,99,101
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -430,6 +431,14 @@ tree::TerminalNode* AslParser::TypeContext::BOOL() {
   return getToken(AslParser::BOOL, 0);
 }
 
+tree::TerminalNode* AslParser::TypeContext::CHAR() {
+  return getToken(AslParser::CHAR, 0);
+}
+
+tree::TerminalNode* AslParser::TypeContext::FLOAT() {
+  return getToken(AslParser::FLOAT, 0);
+}
+
 
 size_t AslParser::TypeContext::getRuleIndex() const {
   return AslParser::RuleType;
@@ -459,9 +468,8 @@ AslParser::TypeContext* AslParser::type() {
     enterOuterAlt(_localctx, 1);
     setState(46);
     _la = _input->LA(1);
-    if (!(_la == AslParser::INT
-
-    || _la == AslParser::BOOL)) {
+    if (!((((_la & ~ 0x3fULL) == 0) &&
+      ((1ULL << _la) & 61440) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -524,7 +532,7 @@ AslParser::StatementsContext* AslParser::statements() {
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 1839104) != 0)) {
+      ((1ULL << _la) & 29425664) != 0)) {
       setState(48);
       statement();
       setState(53);
@@ -885,8 +893,16 @@ tree::TerminalNode* AslParser::ArithmeticContext::MUL() {
   return getToken(AslParser::MUL, 0);
 }
 
+tree::TerminalNode* AslParser::ArithmeticContext::DIV() {
+  return getToken(AslParser::DIV, 0);
+}
+
 tree::TerminalNode* AslParser::ArithmeticContext::PLUS() {
   return getToken(AslParser::PLUS, 0);
+}
+
+tree::TerminalNode* AslParser::ArithmeticContext::MINUS() {
+  return getToken(AslParser::MINUS, 0);
 }
 
 AslParser::ArithmeticContext::ArithmeticContext(ExprContext *ctx) { copyFrom(ctx); }
@@ -950,7 +966,7 @@ AslParser::ExprContext* AslParser::expr(int precedence) {
   size_t startState = 16;
   enterRecursionRule(_localctx, 16, AslParser::RuleExpr, precedence);
 
-    
+    size_t _la = 0;
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1007,7 +1023,17 @@ AslParser::ExprContext* AslParser::expr(int precedence) {
 
           if (!(precpred(_ctx, 5))) throw FailedPredicateException(this, "precpred(_ctx, 5)");
           setState(91);
-          antlrcpp::downCast<ArithmeticContext *>(_localctx)->op = match(AslParser::MUL);
+          antlrcpp::downCast<ArithmeticContext *>(_localctx)->op = _input->LT(1);
+          _la = _input->LA(1);
+          if (!(_la == AslParser::MUL
+
+          || _la == AslParser::DIV)) {
+            antlrcpp::downCast<ArithmeticContext *>(_localctx)->op = _errHandler->recoverInline(this);
+          }
+          else {
+            _errHandler->reportMatch(this);
+            consume();
+          }
           setState(92);
           expr(6);
           break;
@@ -1021,7 +1047,17 @@ AslParser::ExprContext* AslParser::expr(int precedence) {
 
           if (!(precpred(_ctx, 4))) throw FailedPredicateException(this, "precpred(_ctx, 4)");
           setState(94);
-          antlrcpp::downCast<ArithmeticContext *>(_localctx)->op = match(AslParser::PLUS);
+          antlrcpp::downCast<ArithmeticContext *>(_localctx)->op = _input->LT(1);
+          _la = _input->LA(1);
+          if (!(_la == AslParser::PLUS
+
+          || _la == AslParser::MINUS)) {
+            antlrcpp::downCast<ArithmeticContext *>(_localctx)->op = _errHandler->recoverInline(this);
+          }
+          else {
+            _errHandler->reportMatch(this);
+            consume();
+          }
           setState(95);
           expr(5);
           break;
