@@ -1,28 +1,46 @@
 # --- Ejecutables y Compilados ---
 main
+asl
 *.o
+**/common/*.o
 
-# --- Archivos generados por ANTLR (C++) ---
-# Queremos ignorar los Lexer, Parser, Visitors generados, 
-# pero NO tu gramática (Calc.g4) ni tu main.cpp
-CalcLexer.h
-CalcLexer.cpp
-CalcParser.h
-CalcParser.cpp
-CalcVisitor.h
-CalcVisitor.cpp
-CalcBaseVisitor.h
-CalcBaseVisitor.cpp
+# --- ANTLR: Ignorar TODO lo generado (C++ y Java) ---
+# Esta regla ignora archivos que ANTLR suele generar automáticamente,
+# basándose en patrones comunes de nombres.
+*Lexer.h
+*Lexer.cpp
+*Parser.h
+*Parser.cpp
+*Visitor.h
+*Visitor.cpp
+*BaseVisitor.h
+*BaseVisitor.cpp
+*Listener.h
+*Listener.cpp
+*BaseListener.h
+*BaseListener.cpp
 
-# --- Archivos auxiliares de ANTLR ---
+# Archivos de soporte y tokens
 *.interp
 *.tokens
+.antlr/
 
-# --- Archivos generados si usaste Java (grun) ---
+# Si usas Java (grun)
 *.java
 *.class
+!**/src/**/*.java   # No ignorar si tienes fuentes Java manuales en una carpeta src
 
-# --- Otros / Temporales ---
+# --- Archivos de control de dependencias de Make ---
+_antlr
+_deps
+
+# --- Archivos del Sistema y editores ---
 .DS_Store
 .vscode/
-_antlr
+.idea/
+*.swp
+*~
+
+# --- Notas importantes ---
+# NO se ignorarán tus gramáticas (*.g4) ni tus archivos manuales (*.cpp, *.h)
+# porque no coinciden con los patrones de arriba (ej: Asl.g4 o main.cpp)
