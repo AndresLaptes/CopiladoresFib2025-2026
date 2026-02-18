@@ -6,18 +6,6 @@ main
 # --- ANTLR: Ignorar TODO lo generado (C++ y Java) ---
 # Esta regla ignora archivos que ANTLR suele generar automáticamente,
 # basándose en patrones comunes de nombres.
-*Lexer.h
-*Lexer.cpp
-*Parser.h
-*Parser.cpp
-*Visitor.h
-*Visitor.cpp
-*BaseVisitor.h
-*BaseVisitor.cpp
-*Listener.h
-*Listener.cpp
-*BaseListener.h
-*BaseListener.cpp
 
 # Archivos de soporte y tokens
 *.interp
