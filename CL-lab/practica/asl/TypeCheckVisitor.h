@@ -63,6 +63,11 @@ public:
   // Non visited nodes have been commented out:
   std::any visitProgram(AslParser::ProgramContext *ctx);
   std::any visitFunction(AslParser::FunctionContext *ctx);
+  std::any visitParenthesis(AslParser::ParenthesisContext *ctx);
+  std::any visitLogicalAnd(AslParser::LogicalAndContext *ctx);
+  std::any visitLogicalOr(AslParser::LogicalOrContext *ctx);
+  std::any visitNot(AslParser::NotContext *ctx);
+  std::any visitUnaryMinus(AslParser::UnaryMinusContext *ctx);
   // std::any visitDeclarations(AslParser::DeclarationsContext *ctx);
   // std::any visitVariable_decl(AslParser::Variable_declContext *ctx);
   // std::any visitType(AslParser::TypeContext *ctx);
