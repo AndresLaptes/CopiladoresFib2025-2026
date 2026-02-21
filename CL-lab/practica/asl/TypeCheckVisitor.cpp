@@ -219,6 +219,63 @@ std::any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
   return 0;
 }
 
+std::any TypeCheckVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr());
+  putTypeDecor(ctx, t1);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitNot(AslParser::NotContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t = getTypeDecor(ctx->expr());
+  if ((not Types.isErrorTy(t)) and (not Types.isBooleanTy(t)))
+    Errors.incompatibleOperator(ctx->op);
+  TypesMgr::TypeId t1 = Types.createBooleanTy();
+  putTypeDecor(ctx, t1);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitLogicalAnd(AslParser::LogicalAndContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr(0));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(0));
+  visit(ctx->expr(1));
+  TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
+  if ((not Types.isErrorTy(t1)) and (not Types.isBooleanTy(t1)))
+    Errors.incompatibleOperator(ctx->op);
+  if ((not Types.isErrorTy(t2)) and (not Types.isBooleanTy(t2)))
+    Errors.incompatibleOperator(ctx->op);
+  TypesMgr::TypeId t = Types.createBooleanTy();
+  putTypeDecor(ctx, t);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitLogicalOr(AslParser::LogicalOrContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr(0));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(0));
+  visit(ctx->expr(1));
+  TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
+  if ((not Types.isErrorTy(t1)) and (not Types.isBooleanTy(t1)))
+    Errors.incompatibleOperator(ctx->op);
+  if ((not Types.isErrorTy(t2)) and (not Types.isBooleanTy(t2)))
+    Errors.incompatibleOperator(ctx->op);
+  TypesMgr::TypeId t = Types.createBooleanTy();
+  putTypeDecor(ctx, t);
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
 std::any TypeCheckVisitor::visitRelational(AslParser::RelationalContext *ctx) {
   DEBUG_ENTER();
   visit(ctx->expr(0));
@@ -238,7 +295,17 @@ std::any TypeCheckVisitor::visitRelational(AslParser::RelationalContext *ctx) {
 
 std::any TypeCheckVisitor::visitValue(AslParser::ValueContext *ctx) {
   DEBUG_ENTER();
-  TypesMgr::TypeId t = Types.createIntegerTy();
+  TypesMgr::TypeId t;
+  std::string str = ctx->val->getText();
+  if (str.front() == '\'' && str.back() == '\'') {
+    t = Types.createCharacterTy();
+  } 
+  else if (str.find('.') != std::string::npos) {
+    t = Types.createFloatTy();
+  } 
+  else {
+    t = Types.createIntegerTy();
+  }
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
@@ -252,6 +319,16 @@ std::any TypeCheckVisitor::visitExprIdent(AslParser::ExprIdentContext *ctx) {
   putTypeDecor(ctx, t1);
   bool b = getIsLValueDecor(ctx->ident());
   putIsLValueDecor(ctx, b);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitUnaryMinus(AslParser::UnaryMinusContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr());
+  putTypeDecor(ctx, t1);
+  putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
   return 0;
 }

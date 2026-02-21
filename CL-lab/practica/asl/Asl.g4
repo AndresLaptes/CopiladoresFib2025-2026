@@ -37,7 +37,7 @@ program : function+ EOF
         ;
 
 // A function has a name, a list of parameters and a list of statements
-function
+function //TODO: Check
         : FUNC ID '(' ')' declarations statements ENDFUNC
         ;
 
@@ -51,8 +51,8 @@ variable_decl
 
 type    : INT
         | BOOL
-        | CHAR
         | FLOAT
+        | CHAR
         ;
 
 statements
@@ -81,12 +81,19 @@ left_expr
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
-expr    : expr op=(MUL|DIV) expr                    # arithmetic
-        | expr op=(PLUS|MINUS) expr                   # arithmetic
-        | expr op=EQUAL expr                  # relational
-        | INTVAL                              # value
+expr    : '(' expr ')'                        # parenthesis
+        | val=(INTVAL|FLOATVAL|CHARVAL)       # value
         | ident                               # exprIdent
+        | op=MINUS expr                       # unaryMinus
+        | op=NOT expr                         # not
+        | expr op=(MUL|DIV) expr              # arithmetic
+        | expr op=(PLUS|MINUS) expr           # arithmetic               
+        | expr op=(EQUAL|LT|GT|NEQ|LEQ|GEQ) expr    # relational
+        | expr op=AND expr                 # logicalAnd
+        | expr op=OR expr                  # logicalOr
         ;
+        
+        
 
 // Identifiers
 ident   : ID
@@ -96,6 +103,14 @@ ident   : ID
 /// Lexer Rules
 //////////////////////////////////////////////////
 
+AND : 'and' ;
+OR : 'or' ;
+NOT : 'not' ;
+LT : '<' ;
+GT : '>' ;
+NEQ : '!=' ;
+LEQ : '<=' ;
+GEQ : '>=' ;
 ASSIGN    : '=' ;
 EQUAL     : '==' ;
 PLUS      : '+' ;
@@ -116,10 +131,12 @@ ENDFUNC   : 'endfunc' ;
 READ      : 'read' ;
 WRITE     : 'write' ;
 ID        : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')* ;
-INTVAL    : ('0'..'9')+ ;
+INTVAL    : ('1'..'9')('0'..'9')* ;
+FLOATVAL  : ('1'..'9')('0'..'9')* '.' ('0'..'9')* ;
 
 // Strings (in quotes) with escape sequences
 STRING    : '"' ( ESC_SEQ | ~('\\'|'"') )* '"' ;
+CHARVAL   : '\'' ( ESC_SEQ | ~('\\'|'\'') ) '\'' ;
 
 fragment
 ESC_SEQ   : '\\' ('b'|'t'|'n'|'f'|'r'|'"'|'\''|'\\') ;
