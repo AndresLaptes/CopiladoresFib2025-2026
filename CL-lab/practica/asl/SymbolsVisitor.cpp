@@ -104,18 +104,22 @@ std::any SymbolsVisitor::visitDeclarations(AslParser::DeclarationsContext *ctx) 
 }
 
 std::any SymbolsVisitor::visitVariable_decl(AslParser::Variable_declContext *ctx) {
-  DEBUG_ENTER();
-  visit(ctx->type());
-  std::string ident = ctx->ID()->getText();
-  if (Symbols.findInCurrentScope(ident)) {
-    Errors.declaredIdent(ctx->ID());
-  }
-  else {
+    DEBUG_ENTER();
+    visit(ctx->type());
     TypesMgr::TypeId t1 = getTypeDecor(ctx->type());
-    Symbols.addLocalVar(ident, t1);
-  }
-  DEBUG_EXIT();
-  return 0;
+
+    for (auto idToken : ctx->ID()) {
+        std::string ident = idToken->getText();
+        if (Symbols.findInCurrentScope(ident)) {
+            Errors.declaredIdent(idToken);
+        }
+        else {
+            Symbols.addLocalVar(ident, t1);
+        }
+    }
+    
+    DEBUG_EXIT();
+    return 0;
 }
 
 //Refactor con map y switch mas clean

@@ -293,6 +293,7 @@ std::any TypeCheckVisitor::visitRelational(AslParser::RelationalContext *ctx) {
   return 0;
 }
 
+// Esta funcion tendra problemas cuando tocara diferenciar un boleano = 1 con un int = 1
 std::any TypeCheckVisitor::visitValue(AslParser::ValueContext *ctx) {
   DEBUG_ENTER();
   TypesMgr::TypeId t;
@@ -302,7 +303,9 @@ std::any TypeCheckVisitor::visitValue(AslParser::ValueContext *ctx) {
   } 
   else if (str.find('.') != std::string::npos) {
     t = Types.createFloatTy();
-  } 
+  } else if (str == "true" or str == "false") {
+    t = Types.createBooleanTy();
+  }
   else {
     t = Types.createIntegerTy();
   }

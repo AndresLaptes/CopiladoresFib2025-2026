@@ -46,7 +46,7 @@ declarations
         ;
 
 variable_decl
-        : VAR ID ':' type
+        : VAR ID ((',' ID)+)? ':' type
         ;
 
 type    : INT
@@ -82,8 +82,7 @@ left_expr
 
 // Grammar for expressions with boolean, relational and aritmetic operators
 expr    : '(' expr ')'                        # parenthesis
-        | val=(INTVAL|FLOATVAL|CHARVAL)       # value
-        | ident                               # exprIdent
+        | val=(INTVAL|FLOATVAL|CHARVAL | BOOLVAL)       # value
         | op=MINUS expr                       # unaryMinus
         | op=NOT expr                         # not
         | expr op=(MUL|DIV) expr              # arithmetic
@@ -91,6 +90,7 @@ expr    : '(' expr ')'                        # parenthesis
         | expr op=(EQUAL|LT|GT|NEQ|LEQ|GEQ) expr    # relational
         | expr op=AND expr                 # logicalAnd
         | expr op=OR expr                  # logicalOr
+        | ident                               # exprIdent             
         ;
         
         
@@ -130,6 +130,7 @@ FUNC      : 'func' ;
 ENDFUNC   : 'endfunc' ;
 READ      : 'read' ;
 WRITE     : 'write' ;
+BOOLVAL   : ('true' | 'false'); 
 ID        : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')* ;
 INTVAL    : ('1'..'9')('0'..'9')* ;
 FLOATVAL  : ('1'..'9')('0'..'9')* '.' ('0'..'9')* ;

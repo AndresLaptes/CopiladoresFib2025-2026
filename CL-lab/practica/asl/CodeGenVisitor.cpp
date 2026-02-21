@@ -98,22 +98,32 @@ std::any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
 }
 
 std::any CodeGenVisitor::visitDeclarations(AslParser::DeclarationsContext *ctx) {
-  DEBUG_ENTER();
-  std::vector<var> lvars;
-  for (auto & varDeclCtx : ctx->variable_decl()) {
-    var onevar = std::any_cast<var>(visit(varDeclCtx));
-    lvars.push_back(onevar);
-  }
+    DEBUG_ENTER();
+    std::vector<var> lvars;
+  
+    for (auto & varDeclCtx : ctx->variable_decl()) {
+        std::vector<var> declVars = std::any_cast<std::vector<var>>(visit(varDeclCtx));
+    
+        lvars.insert(lvars.end(), declVars.begin(), declVars.end());
+    }
+  
   DEBUG_EXIT();
   return lvars;
 }
 
 std::any CodeGenVisitor::visitVariable_decl(AslParser::Variable_declContext *ctx) {
-  DEBUG_ENTER();
+ DEBUG_ENTER();
   TypesMgr::TypeId   t1 = getTypeDecor(ctx->type());
   std::size_t      size = Types.getSizeOfType(t1);
+  
+  std::vector<var> vars;
+  
+  for (auto idToken : ctx->ID()) {
+      vars.push_back(var{idToken->getText(), Types.to_string(t1), size});
+  }
+  
   DEBUG_EXIT();
-  return var{ctx->ID()->getText(), Types.to_string(t1), size};
+  return vars; 
 }
 
 std::any CodeGenVisitor::visitStatements(AslParser::StatementsContext *ctx) {
