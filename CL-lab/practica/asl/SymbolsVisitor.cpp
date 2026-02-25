@@ -79,7 +79,13 @@ std::any SymbolsVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   std::string funcName = ctx->ID()->getText();
   SymTable::ScopeId sc = Symbols.pushNewScope(funcName);
   putScopeDecor(ctx, sc);
+
+  if(ctx->funParDeclaration()) {
+    visit(ctx->funParDeclaration());
+  }
+
   visit(ctx->declarations());
+  visit(ctx->statements());
   // Symbols.print();
   Symbols.popScope();
   std::string ident = ctx->ID()->getText();
@@ -88,13 +94,49 @@ std::any SymbolsVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   }
   else {
     std::vector<TypesMgr::TypeId> lParamsTy;
+    if (ctx->funParDeclaration()) {
+         auto paramsCtx = dynamic_cast<AslParser::ParametrosFuncionContext*>(ctx->funParDeclaration());
+         if (paramsCtx) {
+             for (auto tyCtx : paramsCtx->type()) {
+                 lParamsTy.push_back(getTypeDecor(tyCtx));
+             }
+         }
+    }
+    
     TypesMgr::TypeId tRet = Types.createVoidTy();
+    if (ctx->type()) {
+        visit(ctx->type());
+        tRet = getTypeDecor(ctx->type());
+    } else {
+        tRet = Types.createVoidTy();
+    }
+    
     TypesMgr::TypeId tFunc = Types.createFunctionTy(lParamsTy, tRet);
     Symbols.addFunction(ident, tFunc);
   }
   DEBUG_EXIT();
   return 0;
 }
+
+std::any SymbolsVisitor::visitParametrosFuncion(AslParser::ParametrosFuncionContext *ctx) {
+    DEBUG_ENTER();
+
+    uint maxParametros = ctx->ID().size(); 
+    for (uint i = 0; i < maxParametros; ++i) {
+        std::string textoID = ctx->ID(i)->getText();
+
+        visit(ctx->ID(i));
+        TypesMgr::TypeId tipo = getTypeDecor(ctx->type(i));
+
+        if (Symbols.findInCurrentScope(textoID)) Errors.declaredIdent(ctx->ID(i));
+        else Symbols.addLocalVar(textoID, tipo);
+
+    }
+
+    DEBUG_EXIT();
+    return 0;
+}
+
 
 std::any SymbolsVisitor::visitDeclarations(AslParser::DeclarationsContext *ctx) {
   DEBUG_ENTER();
