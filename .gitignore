@@ -1,5 +1,6 @@
 # --- Ejecutables y Compilados ---
 main
+asl
 *.o
 **/common/*.o
 
@@ -28,6 +29,12 @@ _deps
 *.swp
 *~
 
-# --- Notas importantes ---
-# NO se ignorarán tus gramáticas (*.g4) ni tus archivos manuales (*.cpp, *.h)   
-# porque no coinciden con los patrones de arriba (ej: Asl.g4 o main.cpp)
+# --- Archivos generados
+AslBaseVisitor.cpp
+AslBaseVisitor.h
+AslLaxer.cpp
+AslLaxer.h
+AslParser.h
+AslParse.cpp
+AslVisitor.cpp
+AslBaseVisitor.h
