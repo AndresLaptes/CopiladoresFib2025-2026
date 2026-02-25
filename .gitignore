@@ -1,5 +1,6 @@
 # --- Ejecutables y Compilados ---
 main
+/CL-lab/practica/asl/asl
 *.o
 **/common/*.o
 
@@ -15,7 +16,7 @@ main
 # Si usas Java (grun)
 *.java
 *.class
-!**/src/**/*.java   # No ignorar si tienes fuentes Java manuales en una carpeta src
+!**/src/**/*.java   
 
 # --- Archivos de control de dependencias de Make ---
 _antlr
@@ -28,6 +29,13 @@ _deps
 *.swp
 *~
 
-# --- Notas importantes ---
-# NO se ignorarán tus gramáticas (*.g4) ni tus archivos manuales (*.cpp, *.h)   
-# porque no coinciden con los patrones de arriba (ej: Asl.g4 o main.cpp)
+# --- Archivos generados
+AslBaseVisitor.cpp
+AslBaseVisitor.h
+AslLexer.cpp
+AslLexer.h
+AslParser.h
+AslParser.cpp
+AslVisitor.cpp
+AslVisitor.h
+AslBaseVisitor.h
