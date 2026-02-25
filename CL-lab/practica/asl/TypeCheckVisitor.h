@@ -74,6 +74,7 @@ public:
   std::any visitStatements(AslParser::StatementsContext *ctx);
   std::any visitAssignStmt(AslParser::AssignStmtContext *ctx);
   std::any visitIfStmt(AslParser::IfStmtContext *ctx);
+  std::any visitWhileStmt(AslParser::WhileStmtContext *ctx);
   std::any visitProcCall(AslParser::ProcCallContext *ctx);
   std::any visitReadStmt(AslParser::ReadStmtContext *ctx);
   std::any visitWriteExpr(AslParser::WriteExprContext *ctx);
