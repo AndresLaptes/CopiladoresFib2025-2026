@@ -87,10 +87,43 @@ std::any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   SymTable::ScopeId sc = getScopeDecor(ctx);
   Symbols.pushThisScope(sc);
   // Symbols.print();
+
+  //Obtener el tipo de la función desde la tabla de símbolos
+  std::string nameFunction = ctx->ID()->getText();
+  TypesMgr::TypeId funType = Symbols.getType(nameFunction);
+  setCurrentFunctionTy(funType);
+
+  if (ctx->funParDeclaration()) {
+    visit(ctx->funParDeclaration());
+  }
+
+  visit(ctx->declarations());
   visit(ctx->statements());
+
   Symbols.popScope();
   DEBUG_EXIT();
   return 0;
+}
+
+
+
+std::any TypeCheckVisitor::visitAssignStmt(AslParser::ReturnStmtContext *ctx) {
+    DEBUG_ENTER();
+    TypesMgr::TypeId currentFunctionType = getCurrentFunctionTy();
+
+    if (not ctx->expr()) {
+        if (not Types.isVoidTy(currentFunctionType)) Errors.incompatibleReturn(ctx->RETURN());
+        return 0;
+    }
+
+    visit(ctx->expr());
+    TypesMgr::TypeId actualReturnType = getTypeDecor(ctx->expr());
+
+    if(Types.isVoidTy(currentFunctionType)) Errors.incompatibleReturn(ctx->RETURN());
+    if(not Types.isErrorTy(actualReturnType) and not Types.copyableTypes(currentFunctionType, actualReturnType)) Errors.incompatibleReturn(ctx->RETURN());
+
+    return 0;
+    DEBUG_EXIT();
 }
 
 // std::any TypeCheckVisitor::visitDeclarations(AslParser::DeclarationsContext *ctx) {
