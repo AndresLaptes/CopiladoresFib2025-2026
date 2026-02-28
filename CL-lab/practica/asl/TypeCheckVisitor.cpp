@@ -105,7 +105,32 @@ std::any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   return 0;
 }
 
+std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
+    DEBUG_ENTER();
+    visit(ctx->ident());
 
+    TypesMgr::TypeId tipoFuncion = getTypeDecor(ctx->ident());
+
+    if (Types.isErrorTy(tipoFuncion)) {
+        putTypeDecor(ctx, Types.createErrorTy());
+        putIsLValueDecor(ctx, false);
+        return 0;
+    }
+
+    if (not Types.isFunctionTy(tipoFuncion)) {
+        Errors.isNotFunction(ctx->ident());
+        putTypeDecor(ctx, Types.createErrorTy());
+        putIsLValueDecor(ctx, false);
+        return 0;
+    }
+
+    TypesMgr::TypeId tipoIdentificador = Types.getFuncReturnType(tipoFuncion);
+    putTypeDecor(ctx, tipoIdentificador);
+    putIsLValueDecor(ctx, false);
+    
+    DEBUG_EXIT();
+    return 0;
+}
 
 std::any TypeCheckVisitor::visitAssignStmt(AslParser::ReturnStmtContext *ctx) {
     DEBUG_ENTER();

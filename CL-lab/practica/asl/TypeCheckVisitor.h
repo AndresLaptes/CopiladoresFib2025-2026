@@ -87,6 +87,8 @@ public:
   std::any visitValue(AslParser::ValueContext *ctx);
   std::any visitIdent(AslParser::IdentContext *ctx);
   std::any visitAssignStmt(AslParser::ReturnStmtContext *ctx);
+  std::any visitExprFunc(AslParser::ExprFuncContext *ctx);
+
 
 private:
 
