@@ -97,7 +97,7 @@ expr    : '(' expr ')'                        # parenthesis
         | expr op=AND expr                 # logicalAnd
         | expr op=OR expr                  # logicalOr
         | ident '[' expr ']'                     # arrayAccessExpr
-        | ident '('')'              # exprFunc
+        | ident '('(expr (',' expr)*)?')'              # exprFunc
         | ident                               # exprIdent
         ;
         

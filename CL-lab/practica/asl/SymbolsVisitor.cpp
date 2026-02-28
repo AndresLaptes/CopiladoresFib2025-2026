@@ -125,7 +125,7 @@ std::any SymbolsVisitor::visitParametrosFuncion(AslParser::ParametrosFuncionCont
     for (uint i = 0; i < maxParametros; ++i) {
         std::string textoID = ctx->ID(i)->getText();
 
-        visit(ctx->ID(i));
+        visit(ctx->type(i));
         TypesMgr::TypeId tipo = getTypeDecor(ctx->type(i));
 
         if (Symbols.findInCurrentScope(textoID)) Errors.declaredIdent(ctx->ID(i));
