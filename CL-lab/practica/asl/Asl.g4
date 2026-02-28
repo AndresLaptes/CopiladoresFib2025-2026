@@ -82,8 +82,8 @@ statement
         ;
 
 // Grammar for left expressions (l-values in C++)
-left_expr
-        : ident
+left_expr : ident '[' expr ']'                 
+        | ident                                 
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
@@ -96,11 +96,10 @@ expr    : '(' expr ')'                        # parenthesis
         | expr op=(EQUAL|LT|GT|NEQ|LEQ|GEQ) expr    # relational
         | expr op=AND expr                 # logicalAnd
         | expr op=OR expr                  # logicalOr
+        | ident '[' expr ']'                     # arrayAccessExpr
         | ident                               # exprIdent             
         ;
         
-        
-
 // Identifiers
 ident   : ID
         ;

@@ -244,6 +244,37 @@ std::any TypeCheckVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
   putTypeDecor(ctx, t1);
   bool b = getIsLValueDecor(ctx->ident());
   putIsLValueDecor(ctx, b);
+
+  if(ctx->expr()) {
+    if ((not Types.isErrorTy(t1)) and (not Types.isArrayTy(t1))) {
+        Errors.nonArrayInArrayAccess(ctx);
+    }
+    visit(ctx->expr());
+    TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
+    if ((not Types.isErrorTy(t2)) and (not Types.isIntegerTy(t2))) {
+        Errors.nonIntegerIndexInArrayAccess(ctx->expr());
+    }
+    
+  }
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitArrayAccessExpr(AslParser::ArrayAccessExprContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->ident());
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
+  if ((not Types.isErrorTy(t1)) and (not Types.isArrayTy(t1))) {
+    Errors.nonArrayInArrayAccess(ctx);
+  }
+  putTypeDecor(ctx, t1);
+  visit(ctx->expr());
+  TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
+  if ((not Types.isErrorTy(t2)) and (not Types.isIntegerTy(t2))) {
+    Errors.nonIntegerIndexInArrayAccess(ctx->expr());
+  }
+  putIsLValueDecor(ctx, false);
+  
   DEBUG_EXIT();
   return 0;
 }
