@@ -124,6 +124,29 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
         return 0;
     }
 
+    auto tiposParametros = Types.getFuncParamsTypes(tipoFuncion);
+    uint numeroParametros = ctx->expr().size();
+    
+    if (numeroParametros != Types.getNumOfParameters(tipoFuncion)) {
+        Errors.numberOfParameters(ctx->ident());
+        putTypeDecor(ctx, Types.createErrorTy());
+        putIsLValueDecor(ctx, false);
+        return 0;
+    }
+
+    for (uint i = 0; i < numeroParametros; ++i) {
+        visit(ctx->expr(i));
+
+        TypesMgr::TypeId tipoParametro = getTypeDecor(ctx->expr(i));
+        if (Types.isErrorTy(tipoParametro)) {
+            continue;
+        }
+
+        if (not Types.copyableTypes(tiposParametros[i], tipoParametro)) {
+            Errors.incompatibleParameter(ctx->expr(i), i + 1, ctx);
+        }
+    }
+
     TypesMgr::TypeId tipoIdentificador = Types.getFuncReturnType(tipoFuncion);
     putTypeDecor(ctx, tipoIdentificador);
     putIsLValueDecor(ctx, false);
