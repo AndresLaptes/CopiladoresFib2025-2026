@@ -118,6 +118,13 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
     }
 
     if (not Types.isFunctionTy(tipoFuncion)) {
+        Errors.isNotCallable(ctx->ident());
+        putTypeDecor(ctx, Types.createErrorTy());
+        putIsLValueDecor(ctx, false);
+        return 0;
+    }
+
+    if (Types.isVoidFunction(tipoFuncion)) {
         Errors.isNotFunction(ctx->ident());
         putTypeDecor(ctx, Types.createErrorTy());
         putIsLValueDecor(ctx, false);
@@ -243,16 +250,42 @@ std::any TypeCheckVisitor::visitWhileStmt(AslParser::WhileStmtContext *ctx) {
 }
 
 std::any TypeCheckVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
-  DEBUG_ENTER();
-  visit(ctx->ident());
-  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
-  if (Types.isErrorTy(t1)) {
-    ;
-  } else if (not Types.isFunctionTy(t1)) {
-    Errors.isNotCallable(ctx->ident());
-  }
-  DEBUG_EXIT();
-  return 0;
+    DEBUG_ENTER();
+    visit(ctx->ident());
+    TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
+
+    if (Types.isErrorTy(t1)) {
+        return 0;
+    } 
+
+    if (not Types.isFunctionTy(t1)) {
+        Errors.isNotCallable(ctx->ident());
+        return 0;
+    }
+
+    auto tiposParametros = Types.getFuncParamsTypes(t1);
+    uint numeroParametros = ctx->expr().size();
+    
+    if (numeroParametros != Types.getNumOfParameters(t1)) {
+        Errors.numberOfParameters(ctx->ident());
+        return 0;
+    }
+
+    for (uint i = 0; i < numeroParametros; ++i) {
+        visit(ctx->expr(i));
+
+        TypesMgr::TypeId tipoParametro = getTypeDecor(ctx->expr(i));
+        if (Types.isErrorTy(tipoParametro)) {
+            continue;
+        }
+
+        if (not Types.copyableTypes(tiposParametros[i], tipoParametro)) {
+            Errors.incompatibleParameter(ctx->expr(i), i + 1, ctx);
+        }
+    }
+
+    DEBUG_EXIT();
+    return 0;
 }
 
 std::any TypeCheckVisitor::visitReadStmt(AslParser::ReadStmtContext *ctx) {
