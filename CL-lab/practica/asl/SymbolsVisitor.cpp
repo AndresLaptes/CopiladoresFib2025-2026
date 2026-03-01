@@ -164,8 +164,27 @@ std::any SymbolsVisitor::visitVariable_decl(AslParser::Variable_declContext *ctx
     return 0;
 }
 
-//Refactor con map y switch mas clean
-std::any SymbolsVisitor::visitType(AslParser::TypeContext *ctx) {
+std::any SymbolsVisitor::visitTypeBasic(AslParser::TypeBasicContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->basicType());
+  TypesMgr::TypeId t = getTypeDecor(ctx->basicType());
+  putTypeDecor(ctx, t);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any SymbolsVisitor::visitArrayType(AslParser::ArrayTypeContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->basicType());
+  uint size = std::stoi(ctx->INTVAL()->getText());
+  TypesMgr::TypeId t = getTypeDecor(ctx->basicType());
+  TypesMgr::TypeId tArray = Types.createArrayTy(size, t);
+  putTypeDecor(ctx, tArray);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any SymbolsVisitor::visitBasicType(AslParser::BasicTypeContext *ctx) {
   DEBUG_ENTER();
   TypesMgr::TypeId t;
   if (ctx->INT()) {
