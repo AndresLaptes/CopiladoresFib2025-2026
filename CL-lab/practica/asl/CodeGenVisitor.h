@@ -29,18 +29,16 @@
 
 #pragma once
 
-#include "antlr4-runtime.h"
-#include "AslBaseVisitor.h"
-
-#include "../common/TypesMgr.h"
-#include "../common/SymTable.h"
-#include "../common/TreeDecoration.h"
-#include "../common/code.h"
-
 #include <string>
 
-// using namespace std;
+#include "../common/SymTable.h"
+#include "../common/TreeDecoration.h"
+#include "../common/TypesMgr.h"
+#include "../common/code.h"
+#include "AslBaseVisitor.h"
+#include "antlr4-runtime.h"
 
+// using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Class CodeGenVisitor: derived from AslBaseVisitor.
@@ -54,13 +52,10 @@
 // so no redefinition is needed.
 
 class CodeGenVisitor final : public AslBaseVisitor {
-
-public:
-
+ public:
   // Constructor
-  CodeGenVisitor(TypesMgr       & Types,
-                 SymTable       & Symbols,
-                 TreeDecoration & Decorations);
+  CodeGenVisitor(TypesMgr &Types, SymTable &Symbols,
+                 TreeDecoration &Decorations);
 
   // Methods to visit each kind of node:
   std::any visitProgram(AslParser::ProgramContext *ctx);
@@ -82,25 +77,23 @@ public:
   std::any visitValue(AslParser::ValueContext *ctx);
   std::any visitIdent(AslParser::IdentContext *ctx);
 
-private:
-
+ private:
   // Attributes
-  TypesMgr        & Types;
-  SymTable        & Symbols;
-  TreeDecoration  & Decorations;
-  counters          codeCounters;
+  TypesMgr &Types;
+  SymTable &Symbols;
+  TreeDecoration &Decorations;
+  counters codeCounters;
   // Current function type (assigned before visit its instructions)
   TypesMgr::TypeId currFunctionType;
 
   // Accessor/Mutator to the type (TypeId) of the current function
-  TypesMgr::TypeId getCurrentFunctionTy ()                      const;
-  void             setCurrentFunctionTy (TypesMgr::TypeId type);
+  TypesMgr::TypeId getCurrentFunctionTy() const;
+  void setCurrentFunctionTy(TypesMgr::TypeId type);
 
   // Getters for the necessary tree node atributes:
   //   Scope and Type
-  SymTable::ScopeId getScopeDecor (antlr4::ParserRuleContext *ctx) const;
-  TypesMgr::TypeId  getTypeDecor  (antlr4::ParserRuleContext *ctx) const;
-
+  SymTable::ScopeId getScopeDecor(antlr4::ParserRuleContext *ctx) const;
+  TypesMgr::TypeId getTypeDecor(antlr4::ParserRuleContext *ctx) const;
 
   //////////////////////////////////////////////////////////////////
   // Class CodeAttribs: is declared inside CodeGenVisitor as an
@@ -110,15 +103,12 @@ private:
   // generate the three attributes. Others, like statements, only
   // generate the instruction list.
   class CodeAttribs {
-    
-  public:
+   public:
     // Constructors
-    CodeAttribs(const std::string & addr,
-                const std::string & offs,
-                instructionList & code);
-    CodeAttribs(const std::string & addr,
-                const std::string & offs,
-                instructionList && code);
+    CodeAttribs(const std::string &addr, const std::string &offs,
+                instructionList &code);
+    CodeAttribs(const std::string &addr, const std::string &offs,
+                instructionList &&code);
 
     // Attributes (publics):
     //   - the address that will hold the value of an expression
@@ -129,5 +119,5 @@ private:
     instructionList code;
 
   };  // class CodeAttribs
-  
+
 };  // class CodeGenVisitor

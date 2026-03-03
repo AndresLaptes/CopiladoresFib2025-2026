@@ -29,49 +29,50 @@
 //
 ////////////////////////////////////////////////////////////////
 
+#include <cstdio>   // fopen
+#include <cstdlib>  // EXIT_FAILURE, EXIT_SUCCESS
+#include <cstring>  // strcmp
+#include <fstream>  // ifstream
+#include <iostream>
 
-#include "antlr4-runtime.h"
-#include "AslLexer.h"
-#include "AslParser.h"
-
-#include "../common/TypesMgr.h"
+#include "../common/SemErrors.h"
 #include "../common/SymTable.h"
 #include "../common/TreeDecoration.h"
-#include "../common/SemErrors.h"
+#include "../common/TypesMgr.h"
+#include "../common/code.h"
+#include "AslLexer.h"
+#include "AslParser.h"
+#include "CodeGenVisitor.h"
 #include "SymbolsVisitor.h"
 #include "TypeCheckVisitor.h"
-#include "../common/code.h"
-#include "CodeGenVisitor.h"
-
-#include <iostream>
-#include <fstream>    // ifstream
-
-#include <cstdio>     // fopen
-#include <cstdlib>    // EXIT_FAILURE, EXIT_SUCCESS
-#include <cstring>    // strcmp
+#include "antlr4-runtime.h"
 
 // using namespace std;
 // using namespace antlr4;
 
-
 int main(int argc, const char* argv[]) {
-
-  bool doTypeCheck=true, doCodeGen=true, doLLVM=false;
+  bool doTypeCheck = true, doCodeGen = true, doLLVM = false;
   std::string filename;
-  for (int i=1; i<argc; ++i) {
-    if (std::string(argv[i]) == "--noTypecheck") doTypeCheck=false;
-    else if (std::string(argv[i]) == "--noCodegen") doCodeGen=false;
-    else if (std::string(argv[i]) == "--genLLVM") doLLVM=true;
-    else if (filename=="") {
-      // it is not a valid option, must be the file name, make sure it is the first one
+  for (int i = 1; i < argc; ++i) {
+    if (std::string(argv[i]) == "--noTypecheck")
+      doTypeCheck = false;
+    else if (std::string(argv[i]) == "--noCodegen")
+      doCodeGen = false;
+    else if (std::string(argv[i]) == "--genLLVM")
+      doLLVM = true;
+    else if (filename == "") {
+      // it is not a valid option, must be the file name, make sure it is the
+      // first one
       filename = std::string(argv[i]);
-    }
-    else { // something unexpected came: Not a valid option, and a second filename
-      std::cout << "Usage: ./asl [--noTypecheck|--noCodegen|--genLLVM] [<file.asl>]" << std::endl;
+    } else {  // something unexpected came: Not a valid option, and a second
+              // filename
+      std::cout
+          << "Usage: ./asl [--noTypecheck|--noCodegen|--genLLVM] [<file.asl>]"
+          << std::endl;
       return EXIT_FAILURE;
     }
   }
-  
+
   // open input file (or std::cin) and create a character stream
   antlr4::ANTLRInputStream input;
   if (filename != "") {
@@ -82,42 +83,43 @@ int main(int argc, const char* argv[]) {
       return EXIT_FAILURE;
     }
     input = antlr4::ANTLRInputStream(stream);
-  }
-  else {            // read fron std::cin
+  } else {  // read fron std::cin
     input = antlr4::ANTLRInputStream(std::cin);
   }
-  
-  // create a lexer that consumes the character stream and produces a token stream
+
+  // create a lexer that consumes the character stream and produces a token
+  // stream
   AslLexer lexer(&input);
   antlr4::CommonTokenStream tokens(&lexer);
-  
+
   // create a parser that consumes the token stream, and parses it.
   AslParser parser(&tokens);
-  
+
   // call the parser and get the parse tree
-  antlr4::tree::ParseTree *tree = parser.program();
-  
+  antlr4::tree::ParseTree* tree = parser.program();
+
   // check for lexical or syntactical errors
   if (lexer.getNumberOfSyntaxErrors() > 0 or
       parser.getNumberOfSyntaxErrors() > 0) {
-    std::cout << "Lexical and/or syntactical errors have been found." << std::endl;
+    std::cout << "Lexical and/or syntactical errors have been found."
+              << std::endl;
     return EXIT_FAILURE;
   }
-  
+
   // print the parse tree (for debugging purposes)
   // std::cout << tree->toStringTree(&parser) << std::endl;
-  
+
   if (not doTypeCheck) {
     std::cout << "-- Early stop: no typecheck has been made." << std::endl;
     return EXIT_SUCCESS;
   }
-  
+
   // auxililary classes we are going to need to store information while
   // traversing the tree. They are described below in this document
-  TypesMgr       types;
-  SymTable       symbols(types);
+  TypesMgr types;
+  SymTable symbols(types);
   TreeDecoration decorations;
-  SemErrors      errors;
+  SemErrors errors;
 
   // create a visitor that looks for variables and function declarations
   // in the tree and stores required information
@@ -130,7 +132,8 @@ int main(int argc, const char* argv[]) {
   typecheck.visit(tree);
 
   if (errors.getNumberOfSemanticErrors() > 0) {
-    //std::cout << "There are semantic errors: no code generated." << std::endl;
+    // std::cout << "There are semantic errors: no code generated." <<
+    // std::endl;
     return EXIT_FAILURE;
   }
 
@@ -138,7 +141,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "-- Early stop: no code generated." << std::endl;
     return EXIT_SUCCESS;
   }
-  
+
   // create a third visitor that will return the generated code
   // for each part of the tree, and will store it in 'mycode'
   CodeGenVisitor codegenerator(types, symbols, decorations);
@@ -146,21 +149,22 @@ int main(int argc, const char* argv[]) {
 
   // print generated code as output
   std::cout << mycode.dump() << std::endl;
-  
+
   if (doLLVM) {
     std::string llvmStr = mycode.dumpLLVM(types, symbols);
     std::string llvmFileName;
-    if (filename == "") 
+    if (filename == "")
       llvmFileName = "output.ll";
     else {
       std::size_t slashPos = filename.rfind("/");
-      std::size_t dotPos   = filename.rfind(".");
-      llvmFileName = filename.substr(slashPos+1, dotPos-slashPos-1) + ".ll";
+      std::size_t dotPos = filename.rfind(".");
+      llvmFileName =
+          filename.substr(slashPos + 1, dotPos - slashPos - 1) + ".ll";
     }
     std::ofstream myLLVMFile(llvmFileName, std::ofstream::out);
     myLLVMFile << llvmStr << std::endl;
     myLLVMFile.close();
   }
-  
+
   return EXIT_SUCCESS;
 }
