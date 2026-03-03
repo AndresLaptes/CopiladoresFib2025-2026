@@ -53,7 +53,13 @@ variable_decl
         : VAR ID ((',' ID)+)? ':' type
         ;
 
-type    : INT
+type
+        : basicType                           #typeBasic
+        | ARRAY '[' INTVAL ']' OF basicType     # arrayType
+        ;
+
+basicType    
+        : INT
         | BOOL
         | FLOAT
         | CHAR
@@ -128,6 +134,8 @@ INT       : 'int';
 BOOL      : 'bool';
 FLOAT     : 'float';
 CHAR      : 'char';
+ARRAY     : 'array';
+OF        : 'of' ;
 IF        : 'if' ;
 RETURN    : 'return' ;
 WHILE     : 'while' ;
