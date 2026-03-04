@@ -29,16 +29,14 @@
 
 #pragma once
 
-#include "antlr4-runtime.h"
-#include "AslBaseVisitor.h"
-
-#include "../common/TypesMgr.h"
+#include "../common/SemErrors.h"
 #include "../common/SymTable.h"
 #include "../common/TreeDecoration.h"
-#include "../common/SemErrors.h"
+#include "../common/TypesMgr.h"
+#include "AslBaseVisitor.h"
+#include "antlr4-runtime.h"
 
 // using namespace std;
-
 
 //////////////////////////////////////////////////////////////////////
 // Class SymbolVisitor:  derived from AslBaseVisitor.
@@ -49,14 +47,10 @@
 // no redefinition is needed.
 
 class SymbolsVisitor final : public AslBaseVisitor {
-
-public:
-
+ public:
   // Constructor
-  SymbolsVisitor(TypesMgr       & Types,
-                 SymTable       & Symbols,
-                 TreeDecoration & Decorations,
-                 SemErrors      & Errors);
+  SymbolsVisitor(TypesMgr &Types, SymTable &Symbols,
+                 TreeDecoration &Decorations, SemErrors &Errors);
 
   // Methods to visit each kind of node.
   // Non visited nodes have been commented out:
@@ -82,22 +76,21 @@ public:
   // std::any visitValue(AslParser::ValueContext *ctx);
   // std::any visitIdent(AslParser::IdentContext *ctx);
 
-private:
-
+ private:
   // Attributes:
-  TypesMgr       & Types;
-  SymTable       & Symbols;
-  TreeDecoration & Decorations;
-  SemErrors      & Errors;
+  TypesMgr &Types;
+  SymTable &Symbols;
+  TreeDecoration &Decorations;
+  SemErrors &Errors;
 
   // Getters for the necessary tree node atributes:
   //   Scope and Type
-  SymTable::ScopeId getScopeDecor (antlr4::ParserRuleContext *ctx);
-  TypesMgr::TypeId  getTypeDecor  (antlr4::ParserRuleContext *ctx);
+  SymTable::ScopeId getScopeDecor(antlr4::ParserRuleContext *ctx);
+  TypesMgr::TypeId getTypeDecor(antlr4::ParserRuleContext *ctx);
 
   // Setters for the necessary tree node attributes:
   //   Scope and Type
-  void putScopeDecor (antlr4::ParserRuleContext *ctx, SymTable::ScopeId s);
-  void putTypeDecor  (antlr4::ParserRuleContext *ctx, TypesMgr::TypeId t);
+  void putScopeDecor(antlr4::ParserRuleContext *ctx, SymTable::ScopeId s);
+  void putTypeDecor(antlr4::ParserRuleContext *ctx, TypesMgr::TypeId t);
 
 };  // class SymbolsVisitor

@@ -29,16 +29,14 @@
 
 #pragma once
 
-#include "antlr4-runtime.h"
-#include "AslBaseVisitor.h"
-
-#include "../common/TypesMgr.h"
+#include "../common/SemErrors.h"
 #include "../common/SymTable.h"
 #include "../common/TreeDecoration.h"
-#include "../common/SemErrors.h"
+#include "../common/TypesMgr.h"
+#include "AslBaseVisitor.h"
+#include "antlr4-runtime.h"
 
 // using namespace std;
-
 
 //////////////////////////////////////////////////////////////////////
 // Class TypeCheckVisitor: derived from AslBaseVisitor.
@@ -50,14 +48,10 @@
 // have to be visited/called so no redefinition is needed.
 
 class TypeCheckVisitor final : public AslBaseVisitor {
-
-public:
-
+ public:
   // Constructor
-  TypeCheckVisitor(TypesMgr       & Types,
-                   SymTable       & Symbols,
-                   TreeDecoration & Decorations,
-                   SemErrors      & Errors);
+  TypeCheckVisitor(TypesMgr &Types, SymTable &Symbols,
+                   TreeDecoration &Decorations, SemErrors &Errors);
 
   // Methods to visit each kind of node.
   // Non visited nodes have been commented out:
@@ -86,34 +80,32 @@ public:
   std::any visitRelational(AslParser::RelationalContext *ctx);
   std::any visitValue(AslParser::ValueContext *ctx);
   std::any visitIdent(AslParser::IdentContext *ctx);
-  std::any visitAssignStmt(AslParser::ReturnStmtContext *ctx);
+  std::any visitReturnStmt(AslParser::ReturnStmtContext *ctx);
   std::any visitExprFunc(AslParser::ExprFuncContext *ctx);
 
-
-private:
-
+ private:
   // Attributes
-  TypesMgr       & Types;
-  SymTable       & Symbols;
-  TreeDecoration & Decorations;
-  SemErrors      & Errors;
+  TypesMgr &Types;
+  SymTable &Symbols;
+  TreeDecoration &Decorations;
+  SemErrors &Errors;
   // Current function type (assigned before visit its instructions)
   TypesMgr::TypeId currFunctionType;
 
   // Accessor/Mutator to the type (TypeId) of the current function
-  TypesMgr::TypeId getCurrentFunctionTy ()                      const;
-  void             setCurrentFunctionTy (TypesMgr::TypeId type);
+  TypesMgr::TypeId getCurrentFunctionTy() const;
+  void setCurrentFunctionTy(TypesMgr::TypeId type);
 
   // Getters for the necessary tree node atributes:
   //   Scope, Type ans IsLValue
-  SymTable::ScopeId getScopeDecor    (antlr4::ParserRuleContext *ctx);
-  TypesMgr::TypeId  getTypeDecor     (antlr4::ParserRuleContext *ctx);
-  bool              getIsLValueDecor (antlr4::ParserRuleContext *ctx);
+  SymTable::ScopeId getScopeDecor(antlr4::ParserRuleContext *ctx);
+  TypesMgr::TypeId getTypeDecor(antlr4::ParserRuleContext *ctx);
+  bool getIsLValueDecor(antlr4::ParserRuleContext *ctx);
 
   // Setters for the necessary tree node attributes:
   //   Scope, Type ans IsLValue
-  void putScopeDecor    (antlr4::ParserRuleContext *ctx, SymTable::ScopeId s);
-  void putTypeDecor     (antlr4::ParserRuleContext *ctx, TypesMgr::TypeId t);
-  void putIsLValueDecor (antlr4::ParserRuleContext *ctx, bool b);
+  void putScopeDecor(antlr4::ParserRuleContext *ctx, SymTable::ScopeId s);
+  void putTypeDecor(antlr4::ParserRuleContext *ctx, TypesMgr::TypeId t);
+  void putIsLValueDecor(antlr4::ParserRuleContext *ctx, bool b);
 
 };  // class TypeCheckVisitor
