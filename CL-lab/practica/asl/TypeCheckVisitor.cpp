@@ -110,6 +110,12 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
 
   TypesMgr::TypeId tipoFuncion = getTypeDecor(ctx->ident());
 
+  uint numeroParametros = ctx->expr().size();
+
+  for (uint i = 0; i < numeroParametros; ++i) {
+    visit(ctx->expr(i));
+  }
+
   if (Types.isErrorTy(tipoFuncion)) {
     putTypeDecor(ctx, Types.createErrorTy());
     putIsLValueDecor(ctx, false);
@@ -131,7 +137,6 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
   }
 
   auto tiposParametros = Types.getFuncParamsTypes(tipoFuncion);
-  uint numeroParametros = ctx->expr().size();
 
   if (numeroParametros != Types.getNumOfParameters(tipoFuncion)) {
     Errors.numberOfParameters(ctx->ident());
@@ -141,8 +146,6 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
   }
 
   for (uint i = 0; i < numeroParametros; ++i) {
-    visit(ctx->expr(i));
-
     TypesMgr::TypeId tipoParametro = getTypeDecor(ctx->expr(i));
     if (Types.isErrorTy(tipoParametro)) {
       continue;
@@ -261,6 +264,12 @@ std::any TypeCheckVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
   visit(ctx->ident());
   TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
 
+  uint numeroParametros = ctx->expr().size();
+
+  for (uint i = 0; i < numeroParametros; ++i) {
+    visit(ctx->expr(i));
+  }
+
   if (Types.isErrorTy(t1)) {
     return 0;
   }
@@ -271,7 +280,6 @@ std::any TypeCheckVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
   }
 
   auto tiposParametros = Types.getFuncParamsTypes(t1);
-  uint numeroParametros = ctx->expr().size();
 
   if (numeroParametros != Types.getNumOfParameters(t1)) {
     Errors.numberOfParameters(ctx->ident());
@@ -279,8 +287,6 @@ std::any TypeCheckVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
   }
 
   for (uint i = 0; i < numeroParametros; ++i) {
-    visit(ctx->expr(i));
-
     TypesMgr::TypeId tipoParametro = getTypeDecor(ctx->expr(i));
     if (Types.isErrorTy(tipoParametro)) {
       continue;
@@ -507,7 +513,14 @@ std::any TypeCheckVisitor::visitUnaryMinus(AslParser::UnaryMinusContext *ctx) {
   DEBUG_ENTER();
   visit(ctx->expr());
   TypesMgr::TypeId t1 = getTypeDecor(ctx->expr());
-  putTypeDecor(ctx, t1);
+  if ((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) {
+    Errors.incompatibleOperator(ctx->op);
+    putTypeDecor(ctx, Types.createErrorTy());
+
+  } else {
+    putTypeDecor(ctx, t1);
+  }
+
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
   return 0;
