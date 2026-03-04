@@ -97,7 +97,7 @@ expr    : '(' expr ')'                        # parenthesis
         | val=(INTVAL|FLOATVAL|CHARVAL | BOOLVAL)       # value
         | op=MINUS expr                       # unaryMinus
         | op=NOT expr                         # not
-        | expr op=(MUL|DIV) expr              # arithmetic
+        | expr op=(MUL|DIV|MOD) expr              # arithmetic
         | expr op=(PLUS|MINUS) expr           # arithmetic               
         | expr op=(EQUAL|LT|GT|NEQ|LEQ|GEQ) expr    # relational
         | expr op=AND expr                 # logicalAnd
@@ -129,6 +129,7 @@ PLUS      : '+' ;
 MINUS     : '-';
 MUL       : '*';
 DIV       : '/';
+MOD       : '%';
 VAR       : 'var';
 INT       : 'int';
 BOOL      : 'bool';

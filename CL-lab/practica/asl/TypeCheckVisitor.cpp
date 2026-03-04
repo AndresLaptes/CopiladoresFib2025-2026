@@ -109,28 +109,26 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
   visit(ctx->ident());
 
   TypesMgr::TypeId tipoFuncion = getTypeDecor(ctx->ident());
-
   uint numeroParametros = ctx->expr().size();
 
   for (uint i = 0; i < numeroParametros; ++i) {
     visit(ctx->expr(i));
   }
 
+  bool isCallable = true;
+  bool isVoidButExpr = false;
+
   if (Types.isErrorTy(tipoFuncion)) {
-    putTypeDecor(ctx, Types.createErrorTy());
-    putIsLValueDecor(ctx, false);
-    return 0;
-  }
-
-  if (not Types.isFunctionTy(tipoFuncion)) {
+    isCallable = false;
+  } else if (not Types.isFunctionTy(tipoFuncion)) {
     Errors.isNotCallable(ctx->ident());
-    putTypeDecor(ctx, Types.createErrorTy());
-    putIsLValueDecor(ctx, false);
-    return 0;
+    isCallable = false;
+  } else if (Types.isVoidFunction(tipoFuncion)) {
+    Errors.isNotFunction(ctx->ident());
+    isVoidButExpr = true;
   }
 
-  if (Types.isVoidFunction(tipoFuncion)) {
-    Errors.isNotFunction(ctx->ident());
+  if (!isCallable) {
     putTypeDecor(ctx, Types.createErrorTy());
     putIsLValueDecor(ctx, false);
     return 0;
@@ -156,10 +154,14 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
     }
   }
 
-  TypesMgr::TypeId tipoIdentificador = Types.getFuncReturnType(tipoFuncion);
-  putTypeDecor(ctx, tipoIdentificador);
-  putIsLValueDecor(ctx, false);
+  if (isVoidButExpr) {
+    putTypeDecor(ctx, Types.createErrorTy());
+  } else {
+    TypesMgr::TypeId tipoIdentificador = Types.getFuncReturnType(tipoFuncion);
+    putTypeDecor(ctx, tipoIdentificador);
+  }
 
+  putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
   return 0;
 }
@@ -365,6 +367,7 @@ std::any TypeCheckVisitor::visitArrayAccessExpr(
   TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
   if ((not Types.isErrorTy(t1)) and (not Types.isArrayTy(t1))) {
     Errors.nonArrayInArrayAccess(ctx);
+    t1 = Types.createErrorTy();
   }
   if (Types.isArrayTy(t1)) {
     t1 = Types.getArrayElemType(t1);
@@ -388,14 +391,34 @@ std::any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
   TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(0));
   visit(ctx->expr(1));
   TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
-  if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
-      ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2))))
-    Errors.incompatibleOperator(ctx->op);
+
   TypesMgr::TypeId t;
-  if (Types.isFloatTy(t1) or Types.isFloatTy(t2))
-    t = Types.createFloatTy();
-  else
+  std::string opString = ctx->op->getText();
+
+  if (opString == "%") {
+    // Exige estrictamente enteros
+    if ((not Types.isErrorTy(t1) and not Types.isIntegerTy(t1)) or
+        (not Types.isErrorTy(t2) and not Types.isIntegerTy(t2))) {
+      Errors.incompatibleOperator(ctx->op);
+    }
+    // El resultado de un % siempre se evalúa como int
     t = Types.createIntegerTy();
+  }
+  // 2. Caso para el resto de operadores aritméticos (+, -, *, /)
+  else {
+    // Exige que sean numéricos (int o float)
+    if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
+        ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2)))) {
+      Errors.incompatibleOperator(ctx->op);
+    }
+
+    if (Types.isFloatTy(t1) or Types.isFloatTy(t2)) {
+      t = Types.createFloatTy();
+    } else {
+      t = Types.createIntegerTy();
+    }
+  }
+
   putTypeDecor(ctx, t);
   putIsLValueDecor(ctx, false);
   DEBUG_EXIT();
@@ -434,7 +457,7 @@ std::any TypeCheckVisitor::visitLogicalAnd(AslParser::LogicalAndContext *ctx) {
   TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
   if ((not Types.isErrorTy(t1)) and (not Types.isBooleanTy(t1)))
     Errors.incompatibleOperator(ctx->op);
-  if ((not Types.isErrorTy(t2)) and (not Types.isBooleanTy(t2)))
+  else if ((not Types.isErrorTy(t2)) and (not Types.isBooleanTy(t2)))
     Errors.incompatibleOperator(ctx->op);
   TypesMgr::TypeId t = Types.createBooleanTy();
   putTypeDecor(ctx, t);
