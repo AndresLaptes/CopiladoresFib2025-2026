@@ -532,7 +532,7 @@ std::any TypeCheckVisitor::visitExprIdent(AslParser::ExprIdentContext *ctx) {
   return 0;
 }
 
-std::any TypeCheckVisitor::visitUnaryMinus(AslParser::UnaryMinusContext *ctx) {
+std::any TypeCheckVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx) {
   DEBUG_ENTER();
   visit(ctx->expr());
   TypesMgr::TypeId t1 = getTypeDecor(ctx->expr());

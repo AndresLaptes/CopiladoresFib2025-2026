@@ -95,7 +95,7 @@ left_expr : ident '[' expr ']'
 // Grammar for expressions with boolean, relational and aritmetic operators
 expr    : '(' expr ')'                        # parenthesis
         | val=(INTVAL|FLOATVAL|CHARVAL | BOOLVAL)       # value
-        | op=MINUS expr                       # unaryMinus
+        | op=(MINUS | PLUS) expr                       # unaryOperator
         | op=NOT expr                         # not
         | expr op=(MUL|DIV|MOD) expr              # arithmetic
         | expr op=(PLUS|MINUS) expr           # arithmetic               
@@ -151,8 +151,8 @@ READ      : 'read' ;
 WRITE     : 'write' ;
 BOOLVAL   : ('true' | 'false'); 
 ID        : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')* ;
-INTVAL    : ('1'..'9')('0'..'9')* ;
-FLOATVAL  : ('1'..'9')('0'..'9')* '.' ('0'..'9')* ;
+INTVAL    : ('1'..'9')('0'..'9')* | '0';
+FLOATVAL  : (('1'..'9')('0'..'9')* | '0' )'.' ('0'..'9')+;
 
 // Strings (in quotes) with escape sequences
 STRING    : '"' ( ESC_SEQ | ~('\\'|'"') )* '"' ;
