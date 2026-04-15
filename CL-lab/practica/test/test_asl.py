@@ -3,81 +3,143 @@ import os
 import subprocess
 import difflib
 
-def run_test(test_num):
-    # Formateamos el número a 2 dígitos (ej: 1 -> "01", 12 -> "12")
-    num_str = f"{test_num:02d}"
-    
-    # Construimos las rutas relativas a tus archivos
+def print_diff(salida_esperada, salida_tuya, file_esperado):
+    """Genera y muestra el diff visual"""
+    print("-" * 40)
+    diff = difflib.unified_diff(
+        salida_esperada.splitlines(keepends=True),
+        salida_tuya.splitlines(keepends=True),
+        fromfile=f'Esperado ({file_esperado})',
+        tofile='Tu salida',
+        n=2
+    )
+    sys.stdout.writelines(diff)
+    print("-" * 40 + "\n")
+
+def run_chkt_test(num_str):
+    """Test para Type Checking (Semántica)"""
     asl_file = f"../examples/jp_chkt_{num_str}.asl"
     err_file = f"../examples/jp_chkt_{num_str}.err"
 
-    # Verificamos que los archivos del test existan
-    if not os.path.exists(asl_file):
-        print(f"⚠️  Test {num_str}: Archivo {asl_file} no encontrado.")
-        return
-    if not os.path.exists(err_file):
-        print(f"⚠️  Test {num_str}: Archivo esperado {err_file} no encontrado.")
+    if not os.path.exists(asl_file) or not os.path.exists(err_file):
+        print(f"⚠️  Test CHKT {num_str}: Archivos no encontrados ({asl_file} o {err_file}).")
         return
 
-    # Ejecutamos tu compilador ./asl
     try:
-        # capture_output=True guarda lo que imprime tu programa
-        # text=True lo devuelve como string en lugar de bytes
+        # Ejecuta tu compilador
         result = subprocess.run(["./asl", asl_file], capture_output=True, text=True)
-        
-        # Juntamos la salida estándar (cout) y la de error (cerr) por si acaso
         salida_asl = result.stdout + result.stderr 
     except FileNotFoundError:
-        print("❌ Error: No se encuentra './asl'. ¿Has compilado con 'make asl'?")
+        print("❌ Error: No se encuentra './asl'.")
         return
 
-    # Leemos la salida que el profesor espera
     with open(err_file, 'r') as f:
         salida_esperada = f.read()
 
-    # Comparamos las salidas
     if salida_asl == salida_esperada:
-        print(f"✅ Test {num_str}: PASSED")
+        print(f"✅ Test CHKT {num_str}: PASSED")
     else:
-        print(f"❌ Test {num_str}: FAILED")
-        print("-" * 40)
-        
-        # Generamos un diff visual y bonito (estilo GitHub)
-        diff = difflib.unified_diff(
-            salida_esperada.splitlines(keepends=True),
-            salida_asl.splitlines(keepends=True),
-            fromfile=f'Esperado ({err_file})',
-            tofile='Tu salida (./asl)',
-            n=2 # Número de líneas de contexto a mostrar
-        )
-        # Imprimimos el diff
-        sys.stdout.writelines(diff)
-        print("-" * 40 + "\n")
+        print(f"❌ Test CHKT {num_str}: FAILED")
+        print_diff(salida_esperada, salida_asl, err_file)
+
+def run_genc_test(num_str):
+    """Test para Generación de Código (LLVM) basándose en checkLLVM.sh"""
+    asl_file = f"../examples/jp_genc_{num_str}.asl"
+    out_file = f"../examples/jp_genc_{num_str}.out"
+    in_file  = f"../examples/jp_genc_{num_str}.in"
+
+    if not os.path.exists(asl_file) or not os.path.exists(out_file):
+        print(f"⚠️  Test GENC {num_str}: Archivos no encontrados ({asl_file} o {out_file}).")
+        return
+
+    # 1. Ejecutar ./asl para generar el .ll
+    try:
+        res_asl = subprocess.run(["./asl", asl_file], capture_output=True, text=True)
+        if res_asl.returncode != 0:
+            print(f"❌ Test GENC {num_str}: FAILED (Error compilando ASL)")
+            print(res_asl.stderr)
+            return
+    except FileNotFoundError:
+        print("❌ Error: No se encuentra './asl'.")
+        return
+
+    # El script checkLLVM.sh asume que el .ll se genera en la carpeta actual
+    ll_file = os.path.basename(asl_file).replace(".asl", ".ll")
+    if not os.path.exists(ll_file):
+        print(f"❌ Test GENC {num_str}: FAILED (No se generó el archivo {ll_file})")
+        return
+
+    # 2. Compilar LLVM IR con clang
+    res_clang = subprocess.run(["clang", "-Wno-override-module", ll_file], capture_output=True, text=True)
+    if res_clang.returncode != 0:
+        print(f"❌ Test GENC {num_str}: FAILED (Error de Clang al generar ejecutable)")
+        print(res_clang.stderr)
+        return
+
+    # 3. Leer archivo .in si existe para pasarlo por stdin
+    stdin_content = None
+    if os.path.exists(in_file):
+        with open(in_file, 'r') as f:
+            stdin_content = f.read()
+
+    # 4. Ejecutar a.out pasándole el contenido del .in
+    res_exec = subprocess.run(["./a.out"], input=stdin_content, capture_output=True, text=True)
+    salida_generada = res_exec.stdout
+
+    # 5. Comparar con el .out
+    with open(out_file, 'r') as f:
+        salida_esperada = f.read()
+
+    if salida_generada == salida_esperada:
+        print(f"✅ Test GENC {num_str}: PASSED")
+    else:
+        print(f"❌ Test GENC {num_str}: FAILED")
+        print_diff(salida_esperada, salida_generada, out_file)
+
+    # 6. Limpiar archivos temporales
+    if os.path.exists(ll_file): os.remove(ll_file)
+    if os.path.exists("a.out"): os.remove("a.out")
+
 
 def main():
-    # Comprobamos que el usuario ha pasado argumentos
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print("Uso correcto:")
-        print("  python3 test.py <numero>      (Ej: python3 test.py 1)")
-        print("  python3 test.py <inicio-fin>  (Ej: python3 test.py 1-5)")
+        print("  python3 test_asl.py <modo> <numero/rango>")
+        print("\nModos:")
+        print("  chkt  -> Semántica (jp_chkt_XX)")
+        print("  genc  -> Generación LLVM (jp_genc_XX)")
+        print("\nEjemplos:")
+        print("  python3 test_asl.py chkt 1")
+        print("  python3 test_asl.py genc 1-5")
         sys.exit(1)
 
-    arg = sys.argv[1]
-    
-    # Si detecta un guion, tratamos el input como un rango
-    if "-" in arg:
+    mode = sys.argv[1].lower()
+    arg_num = sys.argv[2]
+
+    if mode not in ["chkt", "genc"]:
+        print("❌ Error: El modo debe ser 'chkt' o 'genc'.")
+        sys.exit(1)
+
+    if "-" in arg_num:
         try:
-            start, end = map(int, arg.split("-"))
+            start, end = map(int, arg_num.split("-"))
             for i in range(start, end + 1):
-                run_test(i)
+                num_str = f"{i:02d}"
+                if mode == "chkt":
+                    run_chkt_test(num_str)
+                else:
+                    run_genc_test(num_str)
         except ValueError:
-            print("Formato de rango inválido. Usa inicio-fin (ej: 1-5)")
+            print("❌ Formato de rango inválido. Usa inicio-fin (ej: 1-5)")
     else:
-        # Si no, es un solo número
         try:
-            run_test(int(arg))
+            num_str = f"{int(arg_num):02d}"
+            if mode == "chkt":
+                run_chkt_test(num_str)
+            else:
+                run_genc_test(num_str)
         except ValueError:
-            print("Por favor, introduce un número o rango válido.")
+            print("❌ Por favor, introduce un número o rango válido.")
 
 if __name__ == "__main__":
     main()
