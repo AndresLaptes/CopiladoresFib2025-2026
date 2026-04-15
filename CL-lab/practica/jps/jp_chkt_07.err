@@ -1,0 +1,21 @@
+Line 5:11 error: Operator 'not' with incompatible types.
+Line 7:14 error: Operator '*' with incompatible types.
+Line 7:33 error: Operator '>' with incompatible types.
+Line 26:19 error: Parameter #3 with incompatible types in call to 'q'.
+Line 27:8 error: For statement applied to incompatible key variable 'i'.
+Line 27:10 error: For statement applied to incompatible value variable 'c'.
+Line 31:8 error: For statement applied to incompatible key variable 'x'.
+Line 31:10 error: For statement applied to incompatible value variable 'i'.
+Line 31:24 error: Invalid key type in map access.
+Line 32:27 error: Assignment with incompatible types.
+Line 34:13 error: Identifier 'mz' is undeclared.
+Line 34:25 error: Assignment with incompatible types.
+Line 35:13 error: Operator 'or' with incompatible types.
+Line 35:19 error: Invalid key type in map access.
+Line 36:8 error: Identifier 'z1' is undeclared.
+Line 36:11 error: For statement applied to incompatible value variable 's'.
+Line 37:17 error: For statement applied to a non-map 'A'.
+Line 38:10 error: Array access with non integer index.
+Line 38:15 error: Assignment with incompatible types.
+Line 40:6 error: Identifier 'z1' is undeclared.
+Line 40:15 error: Invalid key type in map access.

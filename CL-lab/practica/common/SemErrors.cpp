@@ -146,6 +146,31 @@ void SemErrors::noMainProperlyDeclared(antlr4::ParserRuleContext *ctx) {
   ErrorList.push_back(error);
 }
 
+// NEW in this exam (maps):
+void SemErrors::invalidKeyTypeInMapAccess(antlr4::ParserRuleContext *ctx) {
+  ErrorInfo error(ctx->getStart()->getLine(), ctx->getStart()->getCharPositionInLine(), "Invalid key type in map access.");
+  ErrorList.push_back(error);
+}
+
+// NEW in this exam (maps):
+void SemErrors::forMapStmtAppliedToNonMapVar(antlr4::ParserRuleContext *ctx) {
+  ErrorInfo error(ctx->getStart()->getLine(), ctx->getStart()->getCharPositionInLine(), "For statement applied to a non-map '" + ctx->getStart()->getText() + "'.");
+  ErrorList.push_back(error);
+}
+
+// NEW in this exam (maps):
+void SemErrors::forMapStmtIncompatibleKeyVar(antlr4::ParserRuleContext *ctx) {
+  ErrorInfo error(ctx->getStart()->getLine(), ctx->getStart()->getCharPositionInLine(), "For statement applied to incompatible key variable '" + ctx->getStart()->getText() + "'.");
+  ErrorList.push_back(error);
+}
+
+// NEW in this exam (maps):
+void SemErrors::forMapStmtIncompatibleValueVar(antlr4::ParserRuleContext *ctx) {
+  ErrorInfo error(ctx->getStart()->getLine(), ctx->getStart()->getCharPositionInLine(), "For statement applied to incompatible value variable '" + ctx->getStart()->getText() + "'.");
+  ErrorList.push_back(error);
+}
+
+
 SemErrors::ErrorInfo::ErrorInfo(std::size_t line, std::size_t coln, std::string message)
   : line{line}, coln{coln}, message{message} {
 }

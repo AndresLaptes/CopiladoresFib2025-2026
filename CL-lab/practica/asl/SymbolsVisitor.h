@@ -54,6 +54,7 @@ class SymbolsVisitor final : public AslBaseVisitor {
 
   // Methods to visit each kind of node.
   // Non visited nodes have been commented out:
+  std::any visitMapType(AslParser::MapTypeContext *ctx);
   std::any visitProgram(AslParser::ProgramContext *ctx);
   std::any visitFunction(AslParser::FunctionContext *ctx);
   std::any visitDeclarations(AslParser::DeclarationsContext *ctx);

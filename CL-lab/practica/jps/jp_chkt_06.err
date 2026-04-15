@@ -1,0 +1,17 @@
+Line 4:2 error: Return with incompatible type.
+Line 4:14 error: Operator '*' with incompatible types.
+Line 4:33 error: Operator '>' with incompatible types.
+Line 16:14 error: Parameter #1 with incompatible types in call to 'q'.
+Line 16:25 error: Parameter #2 with incompatible types in call to 'q'.
+Line 16:27 error: Identifier 'y' is undeclared.
+Line 17:7 error: Assignment with incompatible types.
+Line 19:2 error: Instruction 'while' requires a boolean condition.
+Line 19:10 error: Array access with non integer index.
+Line 20:4 error: Array access to a non array operand.
+Line 22:12 error: Operator 'not' with incompatible types.
+Line 24:18 error: Identifier 't' is undeclared.
+Line 26:7 error: Invalid key type in map access.
+Line 26:13 error: Assignment with incompatible types.
+Line 26:30 error: Invalid key type in map access.
+Line 30:2 error: Identifier 'C' is undeclared.
+Line 30:4 error: Array access with non integer index.

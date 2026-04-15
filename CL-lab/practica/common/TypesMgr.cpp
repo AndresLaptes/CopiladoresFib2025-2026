@@ -56,6 +56,7 @@ TypesMgr::TypesMgr() {
   TypesVec[BooleanTyId]   = Type(TypeKind::BooleanKind);
   TypesVec[CharacterTyId] = Type(TypeKind::CharacterKind);
   TypesVec[VoidTyId]      = Type(TypeKind::VoidKind);
+  TypesVec[StringTyId]    = Type(TypeKind::StringKind);
 }
 
 // ----------------------------------------------------------------------
@@ -97,6 +98,17 @@ TypesMgr::TypeId TypesMgr::createArrayTy(unsigned int size,
   return TypesVec.size()-1;
 }
 
+TypesMgr::TypeId TypesMgr::createStringTy() {    // NEW in this EXAM
+  return StringTyId;
+}
+
+// NEW in this EXAM:
+TypesMgr::TypeId TypesMgr::createMapTy(TypeId keyType,
+		                       TypeId valueType) {
+  TypesVec.push_back(Type{keyType, valueType});
+  return TypesVec.size()-1;
+}
+
 // ----------------------------------------------------------------------
 // accessors for working with primitive types
 
@@ -131,7 +143,8 @@ bool TypesMgr::isNumericTy(TypeId tid) const {
 bool TypesMgr::isPrimitiveTy(TypeId tid) const {
   return (tid == IntegerTyId or tid == FloatTyId or
 	  tid == BooleanTyId or tid == CharacterTyId or
-	  tid == VoidTyId);
+	  tid == VoidTyId or
+	  tid == StringTyId);    // NEW in this EXAM
 }
 
 bool TypesMgr::isPrimitiveNonVoidTy(TypeId tid) const {
@@ -142,6 +155,9 @@ bool TypesMgr::isCompoundTy (TypeId tid) const {
   return (isFunctionTy(tid) or isArrayTy(tid));
 }
 
+bool TypesMgr::isStringTy(TypeId tid) const {    // NEW in this EXAM
+  return tid == StringTyId;
+}
 
 // ----------------------------------------------------------------------
 // accessors for working with function types
@@ -203,6 +219,25 @@ TypesMgr::TypeId TypesMgr::getArrayElemType(TypeId tid) const {
 }
 
 // ----------------------------------------------------------------------
+// NEW in this exam: accessors to work with map types
+bool TypesMgr::isMapTy(TypeId tid) const {
+  const Type & t = TypesVec.at(tid);
+  return t.isMapTy();
+}
+
+TypesMgr::TypeId TypesMgr::getMapKeyType(TypeId tid) const {
+  const Type & t = TypesVec.at(tid);
+  assert(t.isMapTy());
+  return t.getMapKeyType();
+}
+
+TypesMgr::TypeId TypesMgr::getMapValueType(TypeId tid) const {
+  const Type & t = TypesVec.at(tid);
+  assert(t.isMapTy());
+  return t.getMapValueType();
+}
+
+// ----------------------------------------------------------------------
 // methods for checking different compatibilities of Types
 
 bool TypesMgr::equalTypes(TypeId tid1, TypeId tid2) const {
@@ -237,6 +272,14 @@ bool TypesMgr::equalTypes(TypeId tid1, TypeId tid2) const {
     TypeId tid2_aux = t2.getArrayElemType();
     return equalTypes(tid1_aux, tid2_aux);
   }
+  // ADDED in this exam:
+  if (t1.isMapTy()) {  // or: if (t2.isMapTy()) {
+    TypeId tid_k1 = t1.getMapKeyType();
+    TypeId tid_v1 = t1.getMapValueType();
+    TypeId tid_k2 = t2.getMapKeyType();
+    TypeId tid_v2 = t2.getMapValueType();
+    return equalTypes(tid_k1, tid_k2) and equalTypes(tid_v1, tid_v2);
+  }
   return false;
 }
 
@@ -246,7 +289,9 @@ bool TypesMgr::comparableTypes(TypeId tid1, TypeId tid2,
     return false;
   if (isNumericTy(tid1) and isNumericTy(tid2))
     return true;
-  if (isCharacterTy(tid1) and isCharacterTy(tid2))
+  // if ((isCharacterTy(tid1) and isCharacterTy(tid2)))    // ADAPTED in this EXAM:
+  if ((isCharacterTy(tid1) or isStringTy(tid1)) and
+      (isCharacterTy(tid2) or isStringTy(tid2)))
     return true;
   if (isBooleanTy(tid1) and isBooleanTy(tid2) and
       (op == "==" or op == "!="))
@@ -258,6 +303,8 @@ bool TypesMgr::copyableTypes(TypeId tid1, TypeId tid2) const {
   if (equalTypes(tid1, tid2))
     return true;
   if (isFloatTy(tid1) and isIntegerTy(tid2))
+    return true;
+  if (isStringTy(tid1) and isCharacterTy(tid2))     // NEW in this EXAM
     return true;
   return false;
 }
@@ -287,6 +334,7 @@ std::string TypesMgr::to_string(TypeId tid) const {
     case BooleanTyId:   return "boolean";
     case CharacterTyId: return "character";
     case VoidTyId:      return "void";
+    case StringTyId:    return "string";    // NEW in this EXAM
     }
   }
   const Type & t = TypesVec.at(tid);
@@ -310,6 +358,13 @@ std::string TypesMgr::to_string(TypeId tid) const {
     std::string s = "array<" + std::to_string(t.getArraySize()) + ",";
     tid1 = t.getArrayElemType();
     s = s + to_string(tid1) +">";
+    return s;
+  }
+  // ADDED in this exam:
+  else if (t.isMapTy()) {
+    TypeId tid_k = t.getMapKeyType();
+    TypeId tid_v = t.getMapValueType();
+    std::string s = "map<" + to_string(tid_k) + "," + to_string(tid_v) + ">";
     return s;
   }
   else {
@@ -367,6 +422,13 @@ TypesMgr::Type::Type(unsigned int arraySize, TypeId arrayElemType) :
   arrayElemTy{arrayElemType} {
   }
 
+// NEW in this exam: Constructors for map types:
+TypesMgr::Type::Type (TypeId mapKeyType, TypeId mapValueType) :
+  ID{TypesMgr::TypeKind::MapKind},
+  mapKeyTy{mapKeyType},
+  mapValueTy{mapValueType} {
+  }
+
 // ----------------------------------------------------------------------
 // accesor to get the kind
 
@@ -411,11 +473,16 @@ bool TypesMgr::Type::isPrimitiveTy() const {
 	  ID == TypeKind::FloatKind or
 	  ID == TypeKind::BooleanKind or
 	  ID == TypeKind::CharacterKind or
-	  ID == TypeKind::VoidKind);
+	  ID == TypeKind::VoidKind or
+	  ID == TypeKind::StringKind);    // NEW in this EXAM
 }
 
 bool TypesMgr::Type::isPrimitiveNonVoidTy() const {
   return (isPrimitiveTy() and not isVoidTy());
+}
+
+bool TypesMgr::Type::isStringTy() const {    // NEW in this EXAM
+  return ID == TypeKind::StringKind;
 }
 
 // ----------------------------------------------------------------------
@@ -459,4 +526,20 @@ unsigned int TypesMgr::Type::getArraySize() const {
 
 TypesMgr::TypeId TypesMgr::Type::getArrayElemType() const {
   return arrayElemTy;
+}
+
+// ----------------------------------------------------------------------
+// NEW in this exam:
+// accessors for working with map types
+
+bool TypesMgr::Type::isMapTy() const {
+  return ID == TypeKind::MapKind;
+}
+
+TypesMgr::TypeId TypesMgr::Type::getMapKeyType() const {
+  return mapKeyTy;
+}
+
+TypesMgr::TypeId TypesMgr::Type::getMapValueType() const {
+  return mapValueTy;
 }

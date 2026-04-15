@@ -56,6 +56,7 @@ variable_decl
 type
         : basicType                           #typeBasic
         | ARRAY '[' INTVAL ']' OF basicType     # arrayType
+        | MAP '<' basicType ',' basicType '>'  # mapType 
         ;
 
 basicType    
@@ -63,6 +64,7 @@ basicType
         | BOOL
         | FLOAT
         | CHAR
+        | STRING
         ;
 
 statements
@@ -76,6 +78,7 @@ statement
           // if-then-else statement (else is optional)
         | IF expr THEN statements (ELSE statements)? ENDIF       # ifStmt
         | WHILE expr DO statements ENDWHILE # whileStmt
+        | FOR ident ',' ident IN ident DO statements ENDFOR # forStmt
           // A function/procedure call has a list of arguments in parenthesis (possibly empty)
         | ident '('(expr (',' expr)*)?')' ';'                   # procCall
           // Read a variable
@@ -83,7 +86,7 @@ statement
           // Write an expression
         | WRITE expr ';'                      # writeExpr
           // Write a string
-        | WRITE STRING ';'                    # writeString
+        | WRITE expr ';'                    # writeString
         | RETURN (expr)? ';'                  # returnStmt
         ;
 
@@ -94,11 +97,14 @@ left_expr : ident '[' expr ']'
 
 // Grammar for expressions with boolean, relational and aritmetic operators
 expr    : '(' expr ')'                        # parenthesis
-        | val=(INTVAL|FLOATVAL|CHARVAL | BOOLVAL)       # value
+        | val=(INTVAL|FLOATVAL|CHARVAL | BOOLVAL | STRINGVAL)       # value
         | op=(MINUS | PLUS) expr                       # unaryOperator
         | op=NOT expr                         # not
         | expr op=(MUL|DIV|MOD) expr              # arithmetic
-        | expr op=(PLUS|MINUS) expr           # arithmetic               
+        | expr op=(PLUS|MINUS) expr           # arithmetic     
+        | expr op=IN expr                        # inExpr
+        | op=INDEX '('expr ',' expr ')'         # indexExpr
+        | expr op='.' LENGTH                    # lengthExpr          
         | expr op=(EQUAL|LT|GT|NEQ|LEQ|GEQ) expr    # relational
         | expr op=AND expr                 # logicalAnd
         | expr op=OR expr                  # logicalOr
@@ -114,7 +120,12 @@ ident   : ID
 //////////////////////////////////////////////////
 /// Lexer Rules
 //////////////////////////////////////////////////
-
+FOR: 'for';
+ENDFOR: 'endfor';
+IN:  'in';
+INDEX: 'index';
+LENGTH: 'length';
+MAP: 'map';
 AND : 'and' ;
 OR : 'or' ;
 NOT : 'not' ;
@@ -135,6 +146,7 @@ INT       : 'int';
 BOOL      : 'bool';
 FLOAT     : 'float';
 CHAR      : 'char';
+STRING    : 'string';
 ARRAY     : 'array';
 OF        : 'of' ;
 IF        : 'if' ;
@@ -155,7 +167,7 @@ INTVAL    : ('1'..'9')('0'..'9')* | '0';
 FLOATVAL  : (('1'..'9')('0'..'9')* | '0' )'.' ('0'..'9')+;
 
 // Strings (in quotes) with escape sequences
-STRING    : '"' ( ESC_SEQ | ~('\\'|'"') )* '"' ;
+STRINGVAL    : '"' ( ESC_SEQ | ~('\\'|'"') )* '"' ;
 CHARVAL   : '\'' ( ESC_SEQ | ~('\\'|'\'') ) '\'' ;
 
 fragment

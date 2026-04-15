@@ -69,10 +69,12 @@ public:
   void nonReferenceableLeftExpr     (antlr4::ParserRuleContext *ctx);
   //   node is the labeled operator token (referenced by op in the grammar)
   void incompatibleOperator         (antlr4::Token *node);
+
   //   ctx is the node corresponding to an array access
   void nonArrayInArrayAccess        (antlr4::ParserRuleContext *ctx);
   //   ctx is the node corresponding to the index expression in an array access
   void nonIntegerIndexInArrayAccess (antlr4::ParserRuleContext *ctx);
+
   //   ctx is the node corresponding to the expression
   void booleanRequired              (antlr4::ParserRuleContext *ctx);
   //   ctx is the node corresponding to the function identifier 
@@ -104,6 +106,16 @@ public:
   void nonReferenceableExpression   (antlr4::ParserRuleContext *ctx);
   //   ctx is the program node (grammar start symbol) 
   void noMainProperlyDeclared       (antlr4::ParserRuleContext *ctx);
+
+  // NEW in this exam (maps):
+  //   ctx is the node corresponding to the key expression in a map access
+  void invalidKeyTypeInMapAccess       (antlr4::ParserRuleContext *ctx);
+  //   ctx is the node corresponding to the map identifier
+  void forMapStmtAppliedToNonMapVar    (antlr4::ParserRuleContext *ctx);
+  //   ctx is the node corresponding to the key identifier
+  void forMapStmtIncompatibleKeyVar    (antlr4::ParserRuleContext *ctx);
+  //   ctx is the node corresponding to the value identifier
+  void forMapStmtIncompatibleValueVar  (antlr4::ParserRuleContext *ctx);
 
 
 private:

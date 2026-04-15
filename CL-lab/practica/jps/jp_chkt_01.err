@@ -1,0 +1,7 @@
+Line 9:9 error: Operator '*' with incompatible types.
+Line 10:5 error: Assignment with incompatible types.
+Line 16:9 error: Array access with non integer index.
+Line 20:10 error: Assignment with incompatible types.
+Line 22:4 error: Array access with non integer index.
+Line 23:9 error: Assignment with incompatible types.
+Line 24:4 error: Assignment with incompatible types.

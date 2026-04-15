@@ -1,0 +1,20 @@
+Line 3:4 error: Invalid key type in map access.
+Line 3:7 error: Assignment with incompatible types.
+Line 5:2 error: Return with incompatible type.
+Line 5:26 error: Operator '>' with incompatible types.
+Line 17:8 error: Assignment with incompatible types.
+Line 17:26 error: Parameter #3 with incompatible types in call to 'q'.
+Line 17:29 error: Invalid key type in map access.
+Line 17:33 error: Operator '*' with incompatible types.
+Line 18:4 error: Array access with non integer index.
+Line 18:7 error: Assignment with incompatible types.
+Line 18:12 error: Array access with non integer index.
+Line 20:14 error: Operator '<' with incompatible types.
+Line 22:4 error: Array access to a non array operand.
+Line 23:4 error: Instruction 'if' requires a boolean condition.
+Line 26:9 error: Invalid key type in map access.
+Line 28:7 error: Invalid key type in map access.
+Line 28:13 error: Assignment with incompatible types.
+Line 28:30 error: Invalid key type in map access.
+Line 32:2 error: Identifier 'C' is undeclared.
+Line 32:4 error: Array access with non integer index.

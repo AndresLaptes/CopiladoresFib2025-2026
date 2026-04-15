@@ -78,6 +78,58 @@ std::any TypeCheckVisitor::visitProgram(AslParser::ProgramContext *ctx) {
   return 0;
 }
 
+std::any TypeCheckVisitor::visitInExpr(AslParser::InExprContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr(0));
+  TypesMgr::TypeId t0 = getTypeDecor(ctx->expr(0));
+  visit(ctx->expr(1));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(1));
+  if(!Types.isCharacterTy(t0) and !Types.isStringTy(t0) and !Types.isErrorTy(t0)) {
+    Errors.incompatibleOperator(ctx->op);
+  }
+  else if (!Types.isStringTy(t1) and !Types.isErrorTy(t0)) {
+    Errors.incompatibleOperator(ctx->op);
+  }
+
+  putTypeDecor(ctx, Types.createBooleanTy());
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitIndexExpr(AslParser::IndexExprContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr(0));
+  TypesMgr::TypeId t0 = getTypeDecor(ctx->expr(0));
+  visit(ctx->expr(1));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(1));
+  if(!Types.isCharacterTy(t0) and !Types.isStringTy(t0) and !Types.isErrorTy(t0)) {
+    Errors.incompatibleOperator(ctx->op);
+  }
+  else if (!Types.isStringTy(t1) and !Types.isErrorTy(t0)) {
+    Errors.incompatibleOperator(ctx->op);
+  }
+
+  putTypeDecor(ctx, Types.createIntegerTy());
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitLengthExpr(AslParser::LengthExprContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->expr());
+  TypesMgr::TypeId t0 = getTypeDecor(ctx->expr());
+  if(!Types.isStringTy(t0) and !Types.isErrorTy(t0)) {
+    Errors.incompatibleOperator(ctx->op);
+  }
+
+  putTypeDecor(ctx, Types.createIntegerTy());
+  putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}
+
 std::any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   DEBUG_ENTER();
   SymTable::ScopeId sc = getScopeDecor(ctx);
@@ -103,8 +155,8 @@ std::any TypeCheckVisitor::visitFunction(AslParser::FunctionContext *ctx) {
   DEBUG_EXIT();
   return 0;
 }
-
-std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
+//old version
+/*std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
   DEBUG_ENTER();
   visit(ctx->ident());
 
@@ -162,6 +214,56 @@ std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
   }
 
   putIsLValueDecor(ctx, false);
+  DEBUG_EXIT();
+  return 0;
+}*/
+
+std::any TypeCheckVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
+  DEBUG_ENTER();
+  
+  visit(ctx->ident());
+  uint numeroParametros = ctx->expr().size();
+  for (uint i = 0; i < numeroParametros; ++i) {
+    visit(ctx->expr(i));
+  }
+
+  TypesMgr::TypeId tipoFuncion = getTypeDecor(ctx->ident());
+  TypesMgr::TypeId tipoResultadoExpr = Types.createErrorTy();
+
+  if (not Types.isFunctionTy(tipoFuncion)) {
+    if (not Types.isErrorTy(tipoFuncion)) {
+      Errors.isNotCallable(ctx->ident());
+    }
+  } else {
+    // Si llegamos aquí, ES una función válida
+    if (Types.isVoidFunction(tipoFuncion)) {
+      Errors.isNotFunction(ctx->ident());
+    } else {
+      tipoResultadoExpr = Types.getFuncReturnType(tipoFuncion);
+    }
+
+    // --- COMPROBACIÓN DE PARÁMETROS (Solo si es función real) ---
+    auto tiposParametrosDef = Types.getFuncParamsTypes(tipoFuncion);
+    uint numParamsEsperados = Types.getNumOfParameters(tipoFuncion);
+
+    if (numeroParametros != numParamsEsperados) {
+      Errors.numberOfParameters(ctx->ident());
+    }
+
+    uint limit = std::min(numeroParametros, numParamsEsperados);
+    for (uint i = 0; i < limit; ++i) {
+      TypesMgr::TypeId tipoParamActual = getTypeDecor(ctx->expr(i));
+      if (not Types.isErrorTy(tipoParamActual)) {
+        if (not Types.copyableTypes(tiposParametrosDef[i], tipoParamActual)) {
+          Errors.incompatibleParameter(ctx->expr(i), i + 1, ctx);
+        }
+      }
+    }
+  }
+
+  putTypeDecor(ctx, tipoResultadoExpr);
+  putIsLValueDecor(ctx, false);
+  
   DEBUG_EXIT();
   return 0;
 }
@@ -246,6 +348,32 @@ std::any TypeCheckVisitor::visitIfStmt(AslParser::IfStmtContext *ctx) {
   if (ctx->statements().size() > 1) {
     visit(ctx->statements(1));
   }
+  DEBUG_EXIT();
+  return 0;
+}
+
+std::any TypeCheckVisitor::visitForStmt(AslParser::ForStmtContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->ident(0));
+  visit(ctx->ident(1));
+  visit(ctx->ident(2));
+  TypesMgr::TypeId t0 = getTypeDecor(ctx->ident(0));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->ident(1));
+  TypesMgr::TypeId t2 = getTypeDecor(ctx->ident(2));
+  if (!Types.isMapTy(t2)) {
+    if(!Types.isErrorTy(t2)) Errors.forMapStmtAppliedToNonMapVar(ctx->ident(2));
+  }
+  else {
+    TypesMgr::TypeId key = Types.getMapKeyType(t2);
+    TypesMgr::TypeId value = Types.getMapValueType(t2);
+    if(t0 != key and !Types.isErrorTy(t0)) {
+      Errors.forMapStmtIncompatibleKeyVar(ctx->ident(0));
+    }
+    if(t1 != value and !Types.isErrorTy(t1)) {
+      Errors.forMapStmtIncompatibleValueVar(ctx->ident(1));
+    }
+  }
+  visit(ctx->statements());
   DEBUG_EXIT();
   return 0;
 }
@@ -339,18 +467,34 @@ std::any TypeCheckVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
   visit(ctx->ident());
   TypesMgr::TypeId t = getTypeDecor(ctx->ident());
   if (ctx->expr()) {
-    if ((not Types.isErrorTy(t)) and (not Types.isArrayTy(t))) {
+    if(Types.isMapTy(t)) {
+      visit(ctx->expr());
+      TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
+      if ((not Types.isErrorTy(t2)) and !( t2 == Types.getMapKeyType(t))) {
+        if (Types.isStringTy(Types.getMapKeyType(t)) and Types.isCharacterTy(t2)) { 
+      }
+      else if (Types.isFloatTy(Types.getMapKeyType(t)) and Types.isIntegerTy(t2)) {
+      }
+      else Errors.invalidKeyTypeInMapAccess(ctx->expr());
+      }
+      t = Types.getMapValueType(t);
+    }
+    else {
+      if ((not Types.isErrorTy(t)) and (not Types.isArrayTy(t))) {
       Errors.nonArrayInArrayAccess(ctx);
       t = Types.createErrorTy();
-    }
-    visit(ctx->expr());
-    TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
-    if ((not Types.isErrorTy(t2)) and (not Types.isIntegerTy(t2))) {
-      Errors.nonIntegerIndexInArrayAccess(ctx->expr());
-      t = Types.createErrorTy();
-    }
-    if (Types.isArrayTy(t)) {
-      t = Types.getArrayElemType(t);
+      }
+      visit(ctx->expr());
+      TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
+      if ((not Types.isErrorTy(t2)) and (not Types.isIntegerTy(t2))) {
+        Errors.nonIntegerIndexInArrayAccess(ctx->expr());
+      }
+      if (Types.isArrayTy(t)) {
+        t = Types.getArrayElemType(t);
+      }
+      else {
+        t = Types.createErrorTy();
+      }
     }
   }
   putTypeDecor(ctx, t);
@@ -365,22 +509,37 @@ std::any TypeCheckVisitor::visitArrayAccessExpr(
   DEBUG_ENTER();
   visit(ctx->ident());
   TypesMgr::TypeId t1 = getTypeDecor(ctx->ident());
-  if ((not Types.isErrorTy(t1)) and (not Types.isArrayTy(t1))) {
+
+  if(Types.isMapTy(t1)) {
+    visit(ctx->expr());
+    TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
+    if(!(t2 == Types.getMapKeyType(t1)) and !(Types.isErrorTy(t2))) {
+      if (Types.isStringTy(Types.getMapKeyType(t1)) and Types.isCharacterTy(t2)) { 
+      }
+      else if (Types.isFloatTy(Types.getMapKeyType(t1)) and Types.isIntegerTy(t2)) {
+      }
+      else Errors.invalidKeyTypeInMapAccess(ctx->expr());
+    }
+    putTypeDecor(ctx, Types.getMapValueType(t1));
+    putIsLValueDecor(ctx, false);
+  }
+  else {
+    if ((not Types.isErrorTy(t1)) and (not Types.isArrayTy(t1))) {
     Errors.nonArrayInArrayAccess(ctx);
     t1 = Types.createErrorTy();
   }
-  if (Types.isArrayTy(t1)) {
-    t1 = Types.getArrayElemType(t1);
-  }
+    if (Types.isArrayTy(t1)) {
+      t1 = Types.getArrayElemType(t1);
+    }
 
-  visit(ctx->expr());
-  TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
-  if ((not Types.isErrorTy(t2)) and (not Types.isIntegerTy(t2))) {
-    Errors.nonIntegerIndexInArrayAccess(ctx->expr());
+    visit(ctx->expr());
+    TypesMgr::TypeId t2 = getTypeDecor(ctx->expr());
+    if ((not Types.isErrorTy(t2)) and (not Types.isIntegerTy(t2))) {
+      Errors.nonIntegerIndexInArrayAccess(ctx->expr());
+    }
+    putTypeDecor(ctx, t1);
+    putIsLValueDecor(ctx, false);
   }
-  putTypeDecor(ctx, t1);
-  putIsLValueDecor(ctx, false);
-
   DEBUG_EXIT();
   return 0;
 }
@@ -406,8 +565,15 @@ std::any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
   }
   // 2. Caso para el resto de operadores aritméticos (+, -, *, /)
   else {
-    // Exige que sean numéricos (int o float)
-    if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
+    if(opString == "+" and (Types.isStringTy(t1) or Types.isCharacterTy(t1) or Types.isStringTy(t2) or Types.isCharacterTy(t2))) {
+      if (!(Types.isStringTy(t1) or Types.isCharacterTy(t1) or Types.isErrorTy(t1)) or !(Types.isStringTy(t2) or Types.isCharacterTy(t2) or Types.isErrorTy(t2))) {
+        Errors.incompatibleOperator(ctx->op);
+      }
+      t = Types.createStringTy();
+
+    }
+    else {
+      if (((not Types.isErrorTy(t1)) and (not Types.isNumericTy(t1))) or
         ((not Types.isErrorTy(t2)) and (not Types.isNumericTy(t2)))) {
       Errors.incompatibleOperator(ctx->op);
     }
@@ -417,6 +583,8 @@ std::any TypeCheckVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
     } else {
       t = Types.createIntegerTy();
     }
+    }
+    
   }
 
   putTypeDecor(ctx, t);
@@ -508,6 +676,8 @@ std::any TypeCheckVisitor::visitValue(AslParser::ValueContext *ctx) {
   std::string str = ctx->val->getText();
   if (str.front() == '\'' && str.back() == '\'') {
     t = Types.createCharacterTy();
+  } else if (str.front() == '"' && str.back() == '"') {
+    t = Types.createStringTy();
   } else if (str.find('.') != std::string::npos) {
     t = Types.createFloatTy();
   } else if (str == "true" or str == "false") {

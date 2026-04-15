@@ -210,7 +210,7 @@ std::any CodeGenVisitor::visitWriteExpr(AslParser::WriteExprContext *ctx) {
 std::any CodeGenVisitor::visitWriteString(AslParser::WriteStringContext *ctx) {
   DEBUG_ENTER();
   instructionList code;
-  std::string s = ctx->STRING()->getText();
+  std::string s = ctx->expr()->getText();
   code = code || instruction::WRITES(s);
   DEBUG_EXIT();
   return code;

@@ -55,6 +55,10 @@ class TypeCheckVisitor final : public AslBaseVisitor {
 
   // Methods to visit each kind of node.
   // Non visited nodes have been commented out:
+  std::any visitForStmt(AslParser::ForStmtContext *ctx);
+  std::any visitIndexExpr(AslParser::IndexExprContext *ctx);
+  std::any visitLengthExpr(AslParser::LengthExprContext *ctx);
+  std::any visitInExpr(AslParser::InExprContext *ctx);
   std::any visitProgram(AslParser::ProgramContext *ctx);
   std::any visitFunction(AslParser::FunctionContext *ctx);
   std::any visitParenthesis(AslParser::ParenthesisContext *ctx);

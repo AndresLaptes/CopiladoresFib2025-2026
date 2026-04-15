@@ -70,6 +70,9 @@ public:
 			    TypeId                      returnType);
   TypeId createArrayTy     (unsigned int                size,
 		            TypeId                      elemType);
+  TypeId createStringTy    ();    // NEW in this EXAM
+  TypeId createMapTy       (TypeId                      keyType,
+		            TypeId                      valueType);    // NEW in this EXAM
 
   // Accessors to work with primitive and error types
   bool isErrorTy            (TypeId tid) const;
@@ -82,6 +85,7 @@ public:
   bool isPrimitiveTy        (TypeId tid) const;
   bool isPrimitiveNonVoidTy (TypeId tid) const;
   bool isCompoundTy         (TypeId tid) const;
+  bool isStringTy           (TypeId tid) const;    // NEW in this EXAM
 
   // Accessors to work with function types
   bool                        isFunctionTy       (TypeId tid)     const;
@@ -97,20 +101,25 @@ public:
   unsigned int getArraySize     (TypeId tid) const;
   TypeId       getArrayElemType (TypeId tid) const;
 
+  // NEW in this exam: Accessors to work with map types
+  bool         isMapTy          (TypeId tid) const;
+  TypeId       getMapKeyType    (TypeId tid) const;
+  TypeId       getMapValueType  (TypeId tid) const;
+
   // Methods to check different compatibilities of types
   //   - structurally equal?
-  bool equalTypes      (TypeId tid1, TypeId tid2)     const;
+  bool equalTypes      (TypeId tid1, TypeId tid2)     const;    // MODIFIED in this exam
   //   - comparable with the relational operator op?
   bool comparableTypes (TypeId tid1, TypeId tid2,
-			const std::string & op)       const;
+			const std::string & op)       const;    // MODIFIED in this exam
   //   - tidFrom values can be copied to tidTo?
-  bool copyableTypes   (TypeId tidTo, TypeId tidFrom) const;
+  bool copyableTypes   (TypeId tidTo, TypeId tidFrom) const;    // MODIFIED in this exam
 
   // Method to compute the size of a type (primitive type size = 1)
   std::size_t getSizeOfType (TypeId tid) const;
 
   // Methods to convert to string and print types.
-  std::string to_string (TypeId tidm) const;
+  std::string to_string (TypeId tidm) const;    // MODIFIED in this exam
   void        dump      (TypeId         tid,
 		         std::ostream & os = std::cout) const;
   // will return type name for basic types, element type name for arrays, 'none' for functions.
@@ -138,10 +147,12 @@ private:
     BooleanKind        ,     // boolean type
     CharacterKind      ,     // char type
     VoidKind           ,     // void type with no size
+    StringKind         ,     // string type. NEW in this EXAM
     LastPrimitiveKind  ,
     // Compound data types:
     FunctionKind       ,     // function types
     ArrayKind          ,     // array types
+    MapKind            ,     // map types     // NEW in this exam
   };
 
   // Static attributes:
@@ -154,6 +165,7 @@ private:
   static const TypeId BooleanTyId   = TypeKind::BooleanKind;
   static const TypeId CharacterTyId = TypeKind::CharacterKind;
   static const TypeId VoidTyId      = TypeKind::VoidKind;
+  static const TypeId StringTyId    = TypeKind::StringKind;
 
   //   - number of primitive and 'error' types
   static const unsigned int NumPrimitiveAndErrorTypes = LastPrimitiveKind - FirstPrimitiveKind - 1;
@@ -175,6 +187,9 @@ private:
 	  TypeId                      returnType);
     Type (unsigned int                arraySize,
 	  TypeId                      arrayElemType);
+    // NEW in this exam: Constructors for map types:
+    Type (TypeId                      mapKeyType,
+	  TypeId                      mapValueType);
 
     // Destructor
     ~Type () = default;
@@ -192,6 +207,7 @@ private:
     bool isNumericTy          () const;
     bool isPrimitiveTy        () const;
     bool isPrimitiveNonVoidTy () const;
+    bool isStringTy           () const;    // NEW in this EXAM
 
     // Accessors to work with function types
     bool                        isFunctionTy       ()               const;
@@ -206,6 +222,11 @@ private:
     unsigned int getArraySize     () const;
     TypeId       getArrayElemType () const;
 
+    // NEW in this exam: Accessors to work with map types
+    bool         isMapTy          () const;
+    TypeId       getMapKeyType    () const;
+    TypeId       getMapValueType  () const;
+
   private:
 
     // Atributes:
@@ -217,6 +238,9 @@ private:
     //   - to represent the type of an array:
     unsigned int arraySize;
     TypeId arrayElemTy;
+    //   - to represent the type of a map:    // NEW in this exam
+    TypeId mapKeyTy;
+    TypeId mapValueTy;
 
   };  // class Type
 

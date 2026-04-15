@@ -3,81 +3,69 @@ import os
 import subprocess
 import difflib
 
-def run_test(test_num):
-    # Formateamos el número a 2 dígitos (ej: 1 -> "01", 12 -> "12")
-    num_str = f"{test_num:02d}"
+def run_test(folder_name, test_pattern):
+    # Construimos la ruta a la carpeta (asumiendo que están al mismo nivel que 'practica')
+    folder_path = os.path.abspath(os.path.join("..", folder_name))
     
-    # Construimos las rutas relativas a tus archivos
-    asl_file = f"../examples/jp_chkt_{num_str}.asl"
-    err_file = f"../examples/jp_chkt_{num_str}.err"
+    # Si el patrón es un número, lo formateamos a dos dígitos
+    if test_pattern.isdigit():
+        test_pattern = f"jp_chkt_{int(test_pattern):02d}"
+    
+    asl_file = os.path.join(folder_path, f"{test_pattern}.asl")
+    err_file = os.path.join(folder_path, f"{test_pattern}.err")
 
-    # Verificamos que los archivos del test existan
     if not os.path.exists(asl_file):
-        print(f"⚠️  Test {num_str}: Archivo {asl_file} no encontrado.")
-        return
-    if not os.path.exists(err_file):
-        print(f"⚠️  Test {num_str}: Archivo esperado {err_file} no encontrado.")
+        print(f"⚠️  No encontrado: {asl_file}")
         return
 
-    # Ejecutamos tu compilador ./asl
+    # Ejecutar el compilador
     try:
-        # capture_output=True guarda lo que imprime tu programa
-        # text=True lo devuelve como string en lugar de bytes
+        # Usamos stderr=subprocess.STDOUT para capturar errores del compilador
         result = subprocess.run(["./asl", asl_file], capture_output=True, text=True)
-        
-        # Juntamos la salida estándar (cout) y la de error (cerr) por si acaso
         salida_asl = result.stdout + result.stderr 
     except FileNotFoundError:
-        print("❌ Error: No se encuentra './asl'. ¿Has compilado con 'make asl'?")
+        print("❌ Error: Ejecutable './asl' no encontrado.")
         return
 
-    # Leemos la salida que el profesor espera
-    with open(err_file, 'r') as f:
-        salida_esperada = f.read()
+    # Comparación si existe archivo .err
+    if os.path.exists(err_file):
+        with open(err_file, 'r') as f:
+            salida_esperada = f.read()
 
-    # Comparamos las salidas
-    if salida_asl == salida_esperada:
-        print(f"✅ Test {num_str}: PASSED")
+        if salida_asl.strip() == salida_esperada.strip():
+            print(f"✅ {test_pattern}: PASSED")
+        else:
+            print(f"❌ {test_pattern}: FAILED (Diff abajo)")
+            diff = difflib.unified_diff(
+                salida_esperada.splitlines(keepends=True),
+                salida_asl.splitlines(keepends=True),
+                fromfile='Esperado', tofile='Tu salida', n=1
+            )
+            sys.stdout.writelines(diff)
     else:
-        print(f"❌ Test {num_str}: FAILED")
-        print("-" * 40)
-        
-        # Generamos un diff visual y bonito (estilo GitHub)
-        diff = difflib.unified_diff(
-            salida_esperada.splitlines(keepends=True),
-            salida_asl.splitlines(keepends=True),
-            fromfile=f'Esperado ({err_file})',
-            tofile='Tu salida (./asl)',
-            n=2 # Número de líneas de contexto a mostrar
-        )
-        # Imprimimos el diff
-        sys.stdout.writelines(diff)
-        print("-" * 40 + "\n")
+        print(f"ℹ️  {test_pattern}: Ejecutado (no hay archivo .err para comparar)")
+        print(f"Salida actual:\n{salida_asl}")
 
 def main():
-    # Comprobamos que el usuario ha pasado argumentos
-    if len(sys.argv) != 2:
-        print("Uso correcto:")
-        print("  python3 test.py <numero>      (Ej: python3 test.py 1)")
-        print("  python3 test.py <inicio-fin>  (Ej: python3 test.py 1-5)")
+    if len(sys.argv) < 3:
+        print("Uso:")
+        print("  python3 test.py <carpeta> <test>         (Ej: python3 test.py jps 02)")
+        print("  python3 test.py <carpeta> <inicio-fin>   (Ej: python3 test.py jps 1-10)")
+        print("  python3 test.py <carpeta> <nombre>       (Ej: python3 test.py examples helloworld)")
         sys.exit(1)
 
-    arg = sys.argv[1]
-    
-    # Si detecta un guion, tratamos el input como un rango
-    if "-" in arg:
+    folder = sys.argv[1]
+    arg_test = sys.argv[2]
+
+    if "-" in arg_test:
         try:
-            start, end = map(int, arg.split("-"))
+            start, end = map(int, arg_test.split("-"))
             for i in range(start, end + 1):
-                run_test(i)
+                run_test(folder, str(i))
         except ValueError:
-            print("Formato de rango inválido. Usa inicio-fin (ej: 1-5)")
+            print("Rango inválido.")
     else:
-        # Si no, es un solo número
-        try:
-            run_test(int(arg))
-        except ValueError:
-            print("Por favor, introduce un número o rango válido.")
+        run_test(folder, arg_test)
 
 if __name__ == "__main__":
     main()

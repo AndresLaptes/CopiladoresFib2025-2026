@@ -1,0 +1,15 @@
+Line 20:5 error: Assignment with incompatible types.
+Line 20:7 error: Identifier 'x' is undeclared.
+Line 22:4 error: Assignment with incompatible types.
+Line 31:4 error: Identifier 'n' is undeclared.
+Line 31:18 error: Operator 'and' with incompatible types.
+Line 35:5 error: Instruction 'while' requires a boolean condition.
+Line 36:12 error: Assignment with incompatible types.
+Line 36:17 error: Operator '/' with incompatible types.
+Line 39:21 error: Operator '-' with incompatible types.
+Line 42:17 error: Operator '+' with incompatible types.
+Line 43:4 error: Assignment with incompatible types.
+Line 43:11 error: Parameter #1 with incompatible types in call to 'addA'.
+Line 46:4 error: Array access with non integer index.
+Line 46:10 error: Assignment with incompatible types.
+Line 46:12 error: Identifier 'd' is undeclared.

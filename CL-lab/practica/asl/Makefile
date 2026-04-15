@@ -78,15 +78,15 @@ ANTLR4FLAGS += -o $(GENDIR)
 endif
 
 # The root directory of your antlr4 runtime is ...
-#ANTLR_ROOT := /assig/$(USER)/cl/runtime
-ANTLR_ROOT := /usr/local
+ANTLR_ROOT := /assig/$(USER)/cl/runtime
+#ANTLR_ROOT := /usr/local
 #ANTLR_ROOT := /usr
 
 # Where to find various parts of the runtime files
 INCDIR		:= $(ANTLR_ROOT)/include/antlr4-runtime/
 LIBDIR		:= $(ANTLR_ROOT)/lib/
 BINDIR		:= $(ANTLR_ROOT)/bin
-ANTLR4		:= antlr4 -v 4.13.2
+ANTLR4		:= $(BINDIR)/antlr4
 
 # The minimal set of generated files needed for any grammar.
 ifneq ($(strip $(GENDIR) ),)	# if GENDIR was defined
@@ -155,9 +155,9 @@ CPPFLAGS += --std=c++17
 # ... enable various warnings,
 CPPFLAGS += -Wall -Wextra
 # ... but disable these ones,
-CPPFLAGS += -Wno-unused-parameter -Wno-attributes -Wno-verloaded-virtual
+CPPFLAGS += -Wno-unused-parameter -Wno-attributes -Woverloaded-virtual=0
 # ... always add extra debugging information for gdb.
-CPPFLAGS += -g
+#CPPFLAGS += -g
 
 
 # Tell the compiler to link the antlr4 runtime library to the program
@@ -259,7 +259,7 @@ endif
 # 	@echo "## Updating the _deps dependency file"
 # 	$(CXX) -MM $(CPPFLAGS) $(SOURCES) > _deps
 # -include _deps
-# endifantlr
+# endif
 
 # =================================================
 # Changelog:

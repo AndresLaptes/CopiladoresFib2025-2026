@@ -181,6 +181,18 @@ std::any SymbolsVisitor::visitArrayType(AslParser::ArrayTypeContext *ctx) {
   return 0;
 }
 
+std::any SymbolsVisitor::visitMapType(AslParser::MapTypeContext *ctx) {
+  DEBUG_ENTER();
+  visit(ctx->basicType(0));
+  TypesMgr::TypeId t0 = getTypeDecor(ctx->basicType(0));
+  visit(ctx->basicType(1));
+  TypesMgr::TypeId t1 = getTypeDecor(ctx->basicType(1));
+  TypesMgr::TypeId t = Types.createMapTy(t0, t1);
+  putTypeDecor(ctx, t);
+  DEBUG_EXIT();
+  return 0;
+}
+
 std::any SymbolsVisitor::visitBasicType(AslParser::BasicTypeContext *ctx) {
   DEBUG_ENTER();
   TypesMgr::TypeId t;
@@ -192,6 +204,8 @@ std::any SymbolsVisitor::visitBasicType(AslParser::BasicTypeContext *ctx) {
     t = Types.createCharacterTy();
   } else if (ctx->FLOAT()) {
     t = Types.createFloatTy();
+  } else if (ctx->STRING()) {
+    t = Types.createStringTy();
   }
 
   putTypeDecor(ctx, t);

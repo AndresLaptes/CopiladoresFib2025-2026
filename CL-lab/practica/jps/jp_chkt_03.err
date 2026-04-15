@@ -1,0 +1,27 @@
+Line 21:10 error: Operator '+' with incompatible types.
+Line 22:5 error: Assignment with incompatible types.
+Line 22:10 error: Operator '/' with incompatible types.
+Line 23:7 error: Identifier 'x' is undeclared.
+Line 24:15 error: Operator '+' with incompatible types.
+Line 25:5 error: Assignment with incompatible types.
+Line 25:9 error: Operator '>' with incompatible types.
+Line 25:13 error: Operator '+' with incompatible types.
+Line 27:14 error: Identifier 'y' is undeclared.
+Line 33:10 error: Operator 'in' with incompatible types.
+Line 36:4 error: Identifier 'n' is undeclared.
+Line 36:18 error: Operator '>' with incompatible types.
+Line 40:26 error: Operator '>' with incompatible types.
+Line 41:12 error: Assignment with incompatible types.
+Line 41:17 error: Operator '/' with incompatible types.
+Line 44:6 error: Operator 'index' with incompatible types.
+Line 44:21 error: Operator '-' with incompatible types.
+Line 46:16 error: Operator '*' with incompatible types.
+Line 47:9 error: Operator '.' with incompatible types.
+Line 47:17 error: Operator '+' with incompatible types.
+Line 48:4 error: Assignment with incompatible types.
+Line 48:11 error: Parameter #1 with incompatible types in call to 'addA'.
+Line 51:4 error: Array access with non integer index.
+Line 51:10 error: Assignment with incompatible types.
+Line 51:18 error: Operator '+' with incompatible types.
+Line 51:23 error: Operator '*' with incompatible types.
+Line 51:27 error: Array access with non integer index.
