@@ -29,7 +29,7 @@
 
 #include "SymbolsVisitor.h"
 
-#include <cstddef>  // std::size_t
+#include <cstddef> // std::size_t
 #include <iostream>
 #include <string>
 #include <vector>
@@ -49,154 +49,153 @@
 // Constructor
 SymbolsVisitor::SymbolsVisitor(TypesMgr &Types, SymTable &Symbols,
                                TreeDecoration &Decorations, SemErrors &Errors)
-    : Types{Types},
-      Symbols{Symbols},
-      Decorations{Decorations},
-      Errors{Errors} {}
+    : Types{Types}, Symbols{Symbols}, Decorations{Decorations}, Errors{Errors} {
+}
 
 // Methods to visit each kind of node:
 //
 std::any SymbolsVisitor::visitProgram(AslParser::ProgramContext *ctx) {
-  DEBUG_ENTER();
-  SymTable::ScopeId sc = Symbols.pushNewScope(SymTable::GLOBAL_SCOPE_NAME);
-  putScopeDecor(ctx, sc);
-  for (auto ctxFunc : ctx->function()) {
-    visit(ctxFunc);
-  }
-  // Symbols.print();
-  Symbols.popScope();
-  DEBUG_EXIT();
-  return 0;
+    DEBUG_ENTER();
+    SymTable::ScopeId sc = Symbols.pushNewScope(SymTable::GLOBAL_SCOPE_NAME);
+    putScopeDecor(ctx, sc);
+    for (auto ctxFunc : ctx->function()) {
+        visit(ctxFunc);
+    }
+    // Symbols.print();
+    Symbols.popScope();
+    DEBUG_EXIT();
+    return 0;
 }
 
 std::any SymbolsVisitor::visitFunction(AslParser::FunctionContext *ctx) {
-  DEBUG_ENTER();
-  std::string funcName = ctx->ID()->getText();
-  SymTable::ScopeId sc = Symbols.pushNewScope(funcName);
-  putScopeDecor(ctx, sc);
+    DEBUG_ENTER();
+    std::string funcName = ctx->ID()->getText();
+    SymTable::ScopeId sc = Symbols.pushNewScope(funcName);
+    putScopeDecor(ctx, sc);
 
-  if (ctx->funParDeclaration()) {
-    visit(ctx->funParDeclaration());
-  }
-
-  visit(ctx->declarations());
-  visit(ctx->statements());
-  // Symbols.print();
-  Symbols.popScope();
-  std::string ident = ctx->ID()->getText();
-  if (Symbols.findInCurrentScope(ident)) {
-    Errors.declaredIdent(ctx->ID());
-  } else {
-    std::vector<TypesMgr::TypeId> lParamsTy;
     if (ctx->funParDeclaration()) {
-      auto paramsCtx = dynamic_cast<AslParser::ParametrosFuncionContext *>(
-          ctx->funParDeclaration());
-      if (paramsCtx) {
-        for (auto tyCtx : paramsCtx->type()) {
-          lParamsTy.push_back(getTypeDecor(tyCtx));
-        }
-      }
+        visit(ctx->funParDeclaration());
     }
 
-    TypesMgr::TypeId tRet = Types.createVoidTy();
-    if (ctx->type()) {
-      visit(ctx->type());
-      tRet = getTypeDecor(ctx->type());
+    visit(ctx->declarations());
+    visit(ctx->statements());
+    // Symbols.print();
+    Symbols.popScope();
+    std::string ident = ctx->ID()->getText();
+    if (Symbols.findInCurrentScope(ident)) {
+        Errors.declaredIdent(ctx->ID());
     } else {
-      tRet = Types.createVoidTy();
-    }
+        std::vector<TypesMgr::TypeId> lParamsTy;
+        if (ctx->funParDeclaration()) {
+            auto paramsCtx =
+                dynamic_cast<AslParser::ParametrosFuncionContext *>(
+                    ctx->funParDeclaration());
+            if (paramsCtx) {
+                for (auto tyCtx : paramsCtx->type()) {
+                    lParamsTy.push_back(getTypeDecor(tyCtx));
+                }
+            }
+        }
 
-    TypesMgr::TypeId tFunc = Types.createFunctionTy(lParamsTy, tRet);
-    Symbols.addFunction(ident, tFunc);
-  }
-  DEBUG_EXIT();
-  return 0;
+        TypesMgr::TypeId tRet = Types.createVoidTy();
+        if (ctx->type()) {
+            visit(ctx->type());
+            tRet = getTypeDecor(ctx->type());
+        } else {
+            tRet = Types.createVoidTy();
+        }
+
+        TypesMgr::TypeId tFunc = Types.createFunctionTy(lParamsTy, tRet);
+        Symbols.addFunction(ident, tFunc);
+    }
+    DEBUG_EXIT();
+    return 0;
 }
 
 std::any SymbolsVisitor::visitParametrosFuncion(
     AslParser::ParametrosFuncionContext *ctx) {
-  DEBUG_ENTER();
+    DEBUG_ENTER();
 
-  uint maxParametros = ctx->ID().size();
-  for (uint i = 0; i < maxParametros; ++i) {
-    std::string textoID = ctx->ID(i)->getText();
+    uint maxParametros = ctx->ID().size();
+    for (uint i = 0; i < maxParametros; ++i) {
+        std::string textoID = ctx->ID(i)->getText();
 
-    visit(ctx->type(i));
-    TypesMgr::TypeId tipo = getTypeDecor(ctx->type(i));
+        visit(ctx->type(i));
+        TypesMgr::TypeId tipo = getTypeDecor(ctx->type(i));
 
-    if (Symbols.findInCurrentScope(textoID))
-      Errors.declaredIdent(ctx->ID(i));
-    else
-      Symbols.addLocalVar(textoID, tipo);
-  }
-
-  DEBUG_EXIT();
-  return 0;
-}
-
-std::any SymbolsVisitor::visitDeclarations(
-    AslParser::DeclarationsContext *ctx) {
-  DEBUG_ENTER();
-  visitChildren(ctx);
-  DEBUG_EXIT();
-  return 0;
-}
-
-std::any SymbolsVisitor::visitVariable_decl(
-    AslParser::Variable_declContext *ctx) {
-  DEBUG_ENTER();
-  visit(ctx->type());
-  TypesMgr::TypeId t1 = getTypeDecor(ctx->type());
-
-  for (auto idToken : ctx->ID()) {
-    std::string ident = idToken->getText();
-    if (Symbols.findInCurrentScope(ident)) {
-      Errors.declaredIdent(idToken);
-    } else {
-      Symbols.addLocalVar(ident, t1);
+        if (Symbols.findInCurrentScope(textoID))
+            Errors.declaredIdent(ctx->ID(i));
+        else
+            Symbols.addLocalVar(textoID, tipo);
     }
-  }
 
-  DEBUG_EXIT();
-  return 0;
+    DEBUG_EXIT();
+    return 0;
+}
+
+std::any
+SymbolsVisitor::visitDeclarations(AslParser::DeclarationsContext *ctx) {
+    DEBUG_ENTER();
+    visitChildren(ctx);
+    DEBUG_EXIT();
+    return 0;
+}
+
+std::any
+SymbolsVisitor::visitVariable_decl(AslParser::Variable_declContext *ctx) {
+    DEBUG_ENTER();
+    visit(ctx->type());
+    TypesMgr::TypeId t1 = getTypeDecor(ctx->type());
+
+    for (auto idToken : ctx->ID()) {
+        std::string ident = idToken->getText();
+        if (Symbols.findInCurrentScope(ident)) {
+            Errors.declaredIdent(idToken);
+        } else {
+            Symbols.addLocalVar(ident, t1);
+        }
+    }
+
+    DEBUG_EXIT();
+    return 0;
 }
 
 std::any SymbolsVisitor::visitTypeBasic(AslParser::TypeBasicContext *ctx) {
-  DEBUG_ENTER();
-  visit(ctx->basicType());
-  TypesMgr::TypeId t = getTypeDecor(ctx->basicType());
-  putTypeDecor(ctx, t);
-  DEBUG_EXIT();
-  return 0;
+    DEBUG_ENTER();
+    visit(ctx->basicType());
+    TypesMgr::TypeId t = getTypeDecor(ctx->basicType());
+    putTypeDecor(ctx, t);
+    DEBUG_EXIT();
+    return 0;
 }
 
 std::any SymbolsVisitor::visitArrayType(AslParser::ArrayTypeContext *ctx) {
-  DEBUG_ENTER();
-  visit(ctx->basicType());
-  uint size = std::stoi(ctx->INTVAL()->getText());
-  TypesMgr::TypeId t = getTypeDecor(ctx->basicType());
-  TypesMgr::TypeId tArray = Types.createArrayTy(size, t);
-  putTypeDecor(ctx, tArray);
-  DEBUG_EXIT();
-  return 0;
+    DEBUG_ENTER();
+    visit(ctx->basicType());
+    uint size = std::stoi(ctx->INTVAL()->getText());
+    TypesMgr::TypeId t = getTypeDecor(ctx->basicType());
+    TypesMgr::TypeId tArray = Types.createArrayTy(size, t);
+    putTypeDecor(ctx, tArray);
+    DEBUG_EXIT();
+    return 0;
 }
 
 std::any SymbolsVisitor::visitBasicType(AslParser::BasicTypeContext *ctx) {
-  DEBUG_ENTER();
-  TypesMgr::TypeId t;
-  if (ctx->INT()) {
-    t = Types.createIntegerTy();
-  } else if (ctx->BOOL()) {
-    t = Types.createBooleanTy();
-  } else if (ctx->CHAR()) {
-    t = Types.createCharacterTy();
-  } else if (ctx->FLOAT()) {
-    t = Types.createFloatTy();
-  }
+    DEBUG_ENTER();
+    TypesMgr::TypeId t;
+    if (ctx->INT()) {
+        t = Types.createIntegerTy();
+    } else if (ctx->BOOL()) {
+        t = Types.createBooleanTy();
+    } else if (ctx->CHAR()) {
+        t = Types.createCharacterTy();
+    } else if (ctx->FLOAT()) {
+        t = Types.createFloatTy();
+    }
 
-  putTypeDecor(ctx, t);
-  DEBUG_EXIT();
-  return 0;
+    putTypeDecor(ctx, t);
+    DEBUG_EXIT();
+    return 0;
 }
 
 // std::any SymbolsVisitor::visitStatements(AslParser::StatementsContext *ctx) {
@@ -293,21 +292,21 @@ std::any SymbolsVisitor::visitBasicType(AslParser::BasicTypeContext *ctx) {
 
 // Getters for the necessary tree node atributes:
 //   Scope and Type
-SymTable::ScopeId SymbolsVisitor::getScopeDecor(
-    antlr4::ParserRuleContext *ctx) {
-  return Decorations.getScope(ctx);
+SymTable::ScopeId
+SymbolsVisitor::getScopeDecor(antlr4::ParserRuleContext *ctx) {
+    return Decorations.getScope(ctx);
 }
 TypesMgr::TypeId SymbolsVisitor::getTypeDecor(antlr4::ParserRuleContext *ctx) {
-  return Decorations.getType(ctx);
+    return Decorations.getType(ctx);
 }
 
 // Setters for the necessary tree node attributes:
 //   Scope and Type
 void SymbolsVisitor::putScopeDecor(antlr4::ParserRuleContext *ctx,
                                    SymTable::ScopeId s) {
-  Decorations.putScope(ctx, s);
+    Decorations.putScope(ctx, s);
 }
 void SymbolsVisitor::putTypeDecor(antlr4::ParserRuleContext *ctx,
                                   TypesMgr::TypeId t) {
-  Decorations.putType(ctx, t);
+    Decorations.putType(ctx, t);
 }
