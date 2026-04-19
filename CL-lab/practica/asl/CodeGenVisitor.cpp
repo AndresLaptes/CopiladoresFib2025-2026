@@ -243,6 +243,32 @@ std::any CodeGenVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx) {
     return codAt;
 }
 
+std::any CodeGenVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx) {
+    DEBUG_ENTER();
+    CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    std::string addr = codAt.addr;
+    std::string op = ctx->op->getText();
+    
+    std::string temp = "%" + codeCounters.newTEMP();
+    instructionList &code = codAt.code;
+    if (op == "-") {
+        code = code || instruction::NEG(temp, addr);
+    } else {
+        //TODO
+    }
+
+    CodeAttribs codAts(temp, "", code);
+    DEBUG_EXIT();
+    return codAts;
+}
+
+std::any CodeGenVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx) {
+    DEBUG_ENTER();
+    CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    DEBUG_EXIT();
+    return codAt;
+}
+
 
 std::any CodeGenVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
     DEBUG_ENTER();
@@ -297,7 +323,7 @@ std::any CodeGenVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
 
             code = code || instruction::DIV(temp3, addr1, addr2);
             code = code || instruction::MUL(temp2, temp3, addr2);
-            code = code || instruction::SUB(temp, temp2, addr1);
+            code = code || instruction::SUB(temp, addr1, temp2);
         }
     }
 

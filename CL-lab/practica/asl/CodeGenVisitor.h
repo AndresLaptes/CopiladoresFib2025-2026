@@ -77,6 +77,7 @@ class CodeGenVisitor final : public AslBaseVisitor {
     std::any visitValue(AslParser::ValueContext *ctx);
     std::any visitIdent(AslParser::IdentContext *ctx);
     std::any visitParenthesis(AslParser::ParenthesisContext *ctx);
+    std::any visitUnaryOperator(AslParser::UnaryOperatorContext *ctx);
 
   private:
     // Attributes
