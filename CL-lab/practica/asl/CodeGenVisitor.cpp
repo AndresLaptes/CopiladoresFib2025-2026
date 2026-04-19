@@ -211,7 +211,7 @@ std::any CodeGenVisitor::visitWriteExpr(AslParser::WriteExprContext *ctx) {
         code2 = instruction::WRITEC(addr1);
     else if (Types.isBooleanTy(tid1)) {
         std::string temp1 = "%" + codeCounters.newTEMP();    
-        code2 = instruction::NOT(temp1, addr1);
+        code2 = instruction::INT(temp1, addr1);
         code2 = code2 || instruction::WRITEI(temp1);
 
     }
@@ -261,6 +261,14 @@ std::any CodeGenVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx
     DEBUG_EXIT();
     return codAts;
 }
+
+std::any CodeGenVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx) {
+    DEBUG_ENTER();
+    CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    DEBUG_EXIT();
+    return codAt;
+}
+
 
 std::any CodeGenVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
     DEBUG_ENTER();
