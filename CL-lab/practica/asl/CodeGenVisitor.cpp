@@ -210,10 +210,9 @@ std::any CodeGenVisitor::visitWriteExpr(AslParser::WriteExprContext *ctx) {
     else if (Types.isCharacterTy(tid1))
         code2 = instruction::WRITEC(addr1);
     else if (Types.isBooleanTy(tid1)) {
-        std::string temp1 = "%" + codeCounters.newTEMP();    
-        code2 = instruction::INT(temp1, addr1);
+        std::string temp1 = "%" + codeCounters.newTEMP();
+        code2 = instruction::NOT(temp1, addr1);
         code2 = code2 || instruction::WRITEI(temp1);
-
     }
     instructionList finalCode = code1 || code2;
     DEBUG_EXIT();
@@ -243,32 +242,25 @@ std::any CodeGenVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx) {
     return codAt;
 }
 
-std::any CodeGenVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx) {
+std::any
+CodeGenVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx) {
     DEBUG_ENTER();
     CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
     std::string addr = codAt.addr;
     std::string op = ctx->op->getText();
-    
+
     std::string temp = "%" + codeCounters.newTEMP();
     instructionList &code = codAt.code;
     if (op == "-") {
         code = code || instruction::NEG(temp, addr);
     } else {
-        //TODO
+        // TODO
     }
 
     CodeAttribs codAts(temp, "", code);
     DEBUG_EXIT();
     return codAts;
 }
-
-std::any CodeGenVisitor::visitParenthesis(AslParser::ParenthesisContext *ctx) {
-    DEBUG_ENTER();
-    CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
-    DEBUG_EXIT();
-    return codAt;
-}
-
 
 std::any CodeGenVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
     DEBUG_ENTER();
@@ -341,11 +333,27 @@ std::any CodeGenVisitor::visitRelational(AslParser::RelationalContext *ctx) {
     std::string addr2 = codAt2.addr;
     instructionList &code2 = codAt2.code;
     instructionList &&code = code1 || code2;
-    // TypesMgr::TypeId t1 = getTypeDecor(ctx->expr(0));
-    // TypesMgr::TypeId t2 = getTypeDecor(ctx->expr(1));
-    // TypesMgr::TypeId  t = getTypeDecor(ctx);
+
+    std::string op = ctx->op->getText();
     std::string temp = "%" + codeCounters.newTEMP();
-    code = code || instruction::EQ(temp, addr1, addr2);
+    std::string temp1 = "%" + codeCounters.newTEMP();
+    if (op == "==")
+        code = code || instruction::EQ(temp, addr1, addr2);
+    else if (op == "<=")
+        code = code || instruction::LE(temp1, addr1, addr2);
+    else if (op == "<")
+        code = code || instruction::LT(temp, addr1, addr2);
+    else if (op == "!=") {
+        code = code || instruction::EQ(temp1, addr1, addr2);
+        code = code || instruction::NOT(temp, temp1);
+    } else if (op == ">") {
+        code = code || instruction::LE(temp1, addr1, addr2);
+        code = code || instruction::NOT(temp, temp1);
+    } else {
+        code = code || instruction::LT(temp1, addr1, addr2);
+        code = code || instruction::NOT(temp, temp1);
+    }
+
     CodeAttribs codAts(temp, "", code);
     DEBUG_EXIT();
     return codAts;
@@ -354,8 +362,19 @@ std::any CodeGenVisitor::visitRelational(AslParser::RelationalContext *ctx) {
 std::any CodeGenVisitor::visitValue(AslParser::ValueContext *ctx) {
     DEBUG_ENTER();
     instructionList code;
+    TypesMgr::TypeId type = getTypeDecor(ctx);
     std::string temp = "%" + codeCounters.newTEMP();
-    code = instruction::ILOAD(temp, ctx->getText());
+    if (Types.isBooleanTy(type)) {
+        if (ctx->getText() == "true")
+            code = instruction::ILOAD(temp, "1");
+        else
+            code = instruction::ILOAD(temp, "0");
+    } else if (Types.isCharacterTy(type))
+        code = instruction::CLOAD(temp, ctx->getText());
+    else if (Types.isFloatTy(type))
+        code = instruction::FLOAD(temp, ctx->getText());
+    else
+        code = instruction::ILOAD(temp, ctx->getText());
     CodeAttribs codAts(temp, "", code);
     DEBUG_EXIT();
     return codAts;
@@ -373,6 +392,25 @@ std::any CodeGenVisitor::visitIdent(AslParser::IdentContext *ctx) {
     CodeAttribs codAts(ctx->ID()->getText(), "", instructionList());
     DEBUG_EXIT();
     return codAts;
+}
+
+std::any CodeGenVisitor::visitWhileStmt(AslParser::WhileStmtContext *ctx) {
+    DEBUG_ENTER();
+    CodeAttribs &&codeEval = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    instructionList &&codAts =
+        std::any_cast<instructionList>(visit(ctx->statements()));
+    std::string temp1 = "L" + codeCounters.newLabelWHILE();
+    std::string temp2 = "L" + codeCounters.newLabelWHILE();
+
+    instructionList code;
+    code = instruction::LABEL(temp1) || codeEval.code;
+    code = code || instruction::FJUMP(codeEval.addr, temp2);
+    code = code || codAts;
+    code = code || instruction::UJUMP(temp1);
+    code = code || instruction::LABEL(temp2);
+
+    DEBUG_EXIT();
+    return code;
 }
 
 // Getters for the necessary tree node atributes:
