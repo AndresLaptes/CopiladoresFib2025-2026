@@ -39,7 +39,7 @@
 #include "antlr4-runtime.h"
 
 // uncomment the following line to enable debugging messages with DEBUG*
-// #define DEBUG_BUILD
+#define DEBUG_BUILD
 #include "../common/debug.h"
 
 // using namespace std;
@@ -74,23 +74,64 @@ std::any CodeGenVisitor::visitProgram(AslParser::ProgramContext *ctx) {
     return my_code;
 }
 
+std::any CodeGenVisitor::visitParametrosFuncion(
+    AslParser::ParametrosFuncionContext *ctx) {
+    DEBUG_ENTER();
+
+    uint numParams = ctx->ID().size();
+    std::vector<var> vars;
+    for (uint i = 0; i < numParams; ++i) {
+        TypesMgr::TypeId t1 = getTypeDecor(ctx->type(i));
+        std::size_t size = Types.getSizeOfType(t1);
+        vars.push_back(var{ctx->ID(i)->getText(), Types.to_string(t1), size});
+    }
+
+    DEBUG_EXIT();
+    return vars;
+}
+
+std::any CodeGenVisitor::visitReturnStmt(AslParser::ReturnStmtContext *ctx) {
+    DEBUG_ENTER();
+    instructionList code = instruction::NOOP();
+    if (ctx->expr()) {
+        CodeAttribs &&codeAtrsExpr =
+            std::any_cast<CodeAttribs>(visit(ctx->expr()));
+        code = code || codeAtrsExpr.code;
+        code = code
+    }
+
+    code = code || instruction::RETURN();
+
+    DEBUG_EXIT();
+    return code;
+}
+
 std::any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
     DEBUG_ENTER();
     SymTable::ScopeId sc = getScopeDecor(ctx);
     Symbols.pushThisScope(sc);
     subroutine subr(ctx->ID()->getText());
     codeCounters.reset();
+
+    std::vector<var> &&params =
+        std::any_cast<std::vector<var>>(visit(ctx->funParDeclaration()));
+
+    for (auto &onevar : params) {
+        subr.add_var(onevar);
+    }
     std::vector<var> &&lvars =
         std::any_cast<std::vector<var>>(visit(ctx->declarations()));
     for (auto &onevar : lvars) {
         subr.add_var(onevar);
     }
-    instructionList &&code =
-        std::any_cast<instructionList>(visit(ctx->statements()));
-    code = code || instruction(instruction::RETURN());
+    instructionList &&code = std::any_cast<instructionList>(
+        visit(ctx->statements())); // Todo hay que guardar en una variable el
+                                   // return, en params
     subr.set_instructions(code);
     Symbols.popScope();
     DEBUG_EXIT();
+    std::cout << subr.dump() << std::endl;
+
     return subr;
 }
 
