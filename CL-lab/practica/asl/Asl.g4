@@ -95,12 +95,12 @@ left_expr : ident '[' expr ']'
 // Grammar for expressions with boolean, relational and aritmetic operators
 expr    : '(' expr ')'                        # parenthesis
         | val=(INTVAL|FLOATVAL|CHARVAL | BOOLVAL)       # value
-        | op=(MINUS | PLUS) expr                       # unaryOperator
-        | op=NOT expr                         # not
-        | expr op=(MUL|DIV|MOD) expr              # arithmetic
+        | op=(MINUS | PLUS) expr                    # unaryOperator
+        | op=NOT expr                               # not
+        | expr op=(MUL|DIV|MOD) expr                # arithmetic
         | expr op=(PLUS|MINUS) expr           # arithmetic               
         | expr op=(EQUAL|LT|GT|NEQ|LEQ|GEQ) expr    # relational
-        | expr op=AND expr                 # logicalAnd
+        | expr op=AND expr                  # logicalAnd
         | expr op=OR expr                  # logicalOr
         | ident '[' expr ']'                     # arrayAccessExpr
         | ident '('(expr (',' expr)*)?')'              # exprFunc
