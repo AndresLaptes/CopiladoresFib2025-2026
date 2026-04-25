@@ -3,6 +3,8 @@ import os
 import subprocess
 import difflib
 
+Failed = False
+
 def print_diff(salida_esperada, salida_tuya, file_esperado):
     """Genera y muestra el diff visual"""
     print("-" * 40)
@@ -23,6 +25,7 @@ def run_chkt_test(num_str):
 
     if not os.path.exists(asl_file) or not os.path.exists(err_file):
         print(f"⚠️  Test CHKT {num_str}: Archivos no encontrados ({asl_file} o {err_file}).")
+        Failed = True
         return
 
     try:
@@ -31,6 +34,7 @@ def run_chkt_test(num_str):
         salida_asl = result.stdout + result.stderr 
     except FileNotFoundError:
         print("❌ Error: No se encuentra './asl'.")
+        Failed = True
         return
 
     with open(err_file, 'r') as f:
@@ -40,6 +44,7 @@ def run_chkt_test(num_str):
         print(f"✅ Test CHKT {num_str}: PASSED")
     else:
         print(f"❌ Test CHKT {num_str}: FAILED")
+        Failed = True
         print_diff(salida_esperada, salida_asl, err_file)
 
 def run_genc_test(num_str):
@@ -51,6 +56,7 @@ def run_genc_test(num_str):
 
     if not os.path.exists(asl_file) or not os.path.exists(out_file):
         print(f"⚠️  Test GENC {num_str}: Archivos no encontrados ({asl_file} o {out_file}).")
+        Failed = True
         return
 
     # 1. Ejecutar ./asl y redirigir la salida a tmp.t
@@ -60,11 +66,13 @@ def run_genc_test(num_str):
             
         if res_asl.returncode != 0:
             print(f"❌ Test GENC {num_str}: FAILED (Error compilando ASL)")
+            Failed = True
             print(res_asl.stderr)
             if os.path.exists(t_file): os.remove(t_file)
             return
     except FileNotFoundError:
         print("❌ Error: No se encuentra './asl'.")
+        Failed = True
         return
 
     # 2. Detectar la máquina virtual correcta
@@ -76,6 +84,7 @@ def run_genc_test(num_str):
             
     if not tvm_exec:
         print("❌ Error: No se encuentra la máquina virtual en '../tvm/'.")
+        Failed = True
         if os.path.exists(t_file): os.remove(t_file)
         return
 
@@ -97,6 +106,7 @@ def run_genc_test(num_str):
         print(f"✅ Test GENC {num_str}: PASSED")
     else:
         print(f"❌ Test GENC {num_str}: FAILED")
+        Failed = True
         print_diff(salida_esperada, salida_generada, out_file)
         
         # Opcional: si la VM crasheó, mostrar también el error
@@ -108,6 +118,7 @@ def run_genc_test(num_str):
     if os.path.exists(t_file): os.remove(t_file)
 
 def main():
+    global Failed
     if len(sys.argv) != 3:
         print("Uso correcto:")
         print("  python3 test_asl.py <modo> <numero/rango>")
@@ -124,6 +135,7 @@ def main():
 
     if mode not in ["chkt", "genc"]:
         print("❌ Error: El modo debe ser 'chkt' o 'genc'.")
+        Failed = True
         sys.exit(1)
 
     if "-" in arg_num:
@@ -137,6 +149,7 @@ def main():
                     run_genc_test(num_str)
         except ValueError:
             print("❌ Formato de rango inválido. Usa inicio-fin (ej: 1-5)")
+            Failed = True
     else:
         try:
             num_str = f"{int(arg_num):02d}"
@@ -146,6 +159,12 @@ def main():
                 run_genc_test(num_str)
         except ValueError:
             print("❌ Por favor, introduce un número o rango válido.")
+            Failed = True
+
+    if Failed:
+        return sys.exit(1)
+    else:
+        return sys.exit(0)
 
 if __name__ == "__main__":
     main()

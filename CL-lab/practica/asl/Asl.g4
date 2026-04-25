@@ -37,10 +37,12 @@ program : function+ EOF
         ;
 
 // A function has a name, a list of parameters and a list of statements
-function //TODO: Check
+function
         : FUNC ID '(' funParDeclaration? ')' (':' type)? declarations statements ENDFUNC
         ;
 
+// IMPORTANT: Adding something here may break SymbolsVisitor::VisitFunction -> dynamic_cast<AslParser::ParametrosFuncionContext *>
+// Make sure to check if needed to add something here.
 funParDeclaration 
         : ID ':' type (',' ID ':' type)* # parametrosFuncion
         ; 
@@ -69,7 +71,6 @@ statements
         : (statement)*
         ;
 
-// The different types of instructions
 statement
           // Assignment
         : left_expr ASSIGN expr ';'           # assignStmt
@@ -84,6 +85,7 @@ statement
         | WRITE expr ';'                      # writeExpr
           // Write a string
         | WRITE STRING ';'                    # writeString
+         // Return 
         | RETURN (expr)? ';'                  # returnStmt
         ;
 
@@ -94,12 +96,12 @@ left_expr : ident '[' expr ']'
 
 // Grammar for expressions with boolean, relational and aritmetic operators
 expr    : '(' expr ')'                        # parenthesis
-        | val=(INTVAL|FLOATVAL|CHARVAL | BOOLVAL)       # value
+        | val=(INTVAL | FLOATVAL | CHARVAL | BOOLVAL)       # value
         | op=(MINUS | PLUS) expr                    # unaryOperator
         | op=NOT expr                               # not
-        | expr op=(MUL|DIV|MOD) expr                # arithmetic
-        | expr op=(PLUS|MINUS) expr           # arithmetic               
-        | expr op=(EQUAL|LT|GT|NEQ|LEQ|GEQ) expr    # relational
+        | expr op=(MUL | DIV | MOD) expr                # arithmetic
+        | expr op=(PLUS | MINUS) expr           # arithmetic               
+        | expr op=(EQUAL | LT | GT | NEQ | LEQ | GEQ) expr    # relational
         | expr op=AND expr                  # logicalAnd
         | expr op=OR expr                  # logicalOr
         | ident '[' expr ']'                     # arrayAccessExpr

@@ -86,7 +86,7 @@ ANTLR_ROOT := /usr/local
 INCDIR		:= $(ANTLR_ROOT)/include/antlr4-runtime/
 LIBDIR		:= $(ANTLR_ROOT)/lib/
 BINDIR		:= $(ANTLR_ROOT)/bin
-ANTLR4		:= antlr4 -v 4.13.2
+ANTLR4		:= antlr4
 
 # The minimal set of generated files needed for any grammar.
 ifneq ($(strip $(GENDIR) ),)	# if GENDIR was defined
