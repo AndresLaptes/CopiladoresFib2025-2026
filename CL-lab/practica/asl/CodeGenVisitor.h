@@ -81,6 +81,7 @@ class CodeGenVisitor final : public AslBaseVisitor {
     std::any visitWhileStmt(AslParser::WhileStmtContext *ctx);
     std::any visitParametrosFuncion(AslParser::ParametrosFuncionContext *ctx);
     std::any visitReturnStmt(AslParser::ReturnStmtContext *ctx);
+    std::any visitExprFunc(AslParser::ExprFuncContext *ctx);
 
   private:
     // Attributes
