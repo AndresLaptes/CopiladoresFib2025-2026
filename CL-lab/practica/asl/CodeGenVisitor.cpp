@@ -115,7 +115,7 @@ std::any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
     if (ctx->type()) {
         TypesMgr::TypeId retType = getTypeDecor(ctx->type());
         setCurrentFunctionTy(retType);
-        std::size_t size = Types.getSizeOfType(retType);
+        // std::size_t size = Types.getSizeOfType(retType);
         subr.add_param("_result", Types.to_string(retType), false);
     }
 
@@ -127,8 +127,8 @@ std::any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
         for (uint i = 0; i < numParams; ++i) {
             TypesMgr::TypeId t1 = getTypeDecor(parCtx->type(i));
             bool isArray = Types.isArrayTy(t1);
-            subr.add_param(parCtx->ID(i)->getText(),
-                        Types.to_string(t1), isArray);
+            subr.add_param(parCtx->ID(i)->getText(), Types.to_string(t1),
+                           isArray);
         }
     }
     std::vector<var> &&lvars =
@@ -136,8 +136,8 @@ std::any CodeGenVisitor::visitFunction(AslParser::FunctionContext *ctx) {
     for (auto &onevar : lvars) {
         subr.add_var(onevar);
     }
-    instructionList &&code = std::any_cast<instructionList>(
-        visit(ctx->statements()));
+    instructionList &&code =
+        std::any_cast<instructionList>(visit(ctx->statements()));
     if (!ctx->type()) {
         code = code || instruction::RETURN();
     }
@@ -212,15 +212,29 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
 std::any CodeGenVisitor::visitIfStmt(AslParser::IfStmtContext *ctx) {
     DEBUG_ENTER();
     instructionList code;
-    CodeAttribs &&codAtsE = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    CodeAttribs codAtsE = std::any_cast<CodeAttribs>(visit(ctx->expr()));
     std::string addr1 = codAtsE.addr;
-    instructionList &code1 = codAtsE.code;
-    instructionList &&code2 =
+    instructionList code1 = codAtsE.code;
+    instructionList code2 =
         std::any_cast<instructionList>(visit(ctx->statements(0)));
+
     std::string label = codeCounters.newLabelIF();
     std::string labelEndIf = "endif" + label;
-    code = code1 || instruction::FJUMP(addr1, labelEndIf) || code2 ||
-           instruction::LABEL(labelEndIf);
+
+    if (ctx->statements().size() > 1) {
+        instructionList code3 =
+            std::any_cast<instructionList>(visit(ctx->statements(1)));
+        std::string labelElse = "else" + label;
+
+        code = code1 || instruction::FJUMP(addr1, labelElse) || code2 ||
+               instruction::UJUMP(labelEndIf) ||
+               instruction::LABEL(labelElse) || code3 ||
+               instruction::LABEL(labelEndIf);
+    } else {
+        code = code1 || instruction::FJUMP(addr1, labelEndIf) || code2 ||
+               instruction::LABEL(labelEndIf);
+    }
+
     DEBUG_EXIT();
     return code;
 }
@@ -250,7 +264,7 @@ std::any CodeGenVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
     instructionList code;
     std::string name = ctx->ident()->getText();
 
-    code = instruction::PUSH();  // reservar slot para el valor de retorno
+    code = instruction::PUSH(); // reservar slot para el valor de retorno
 
     for (auto exprCtx : ctx->expr()) {
         CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(exprCtx));
@@ -300,9 +314,7 @@ std::any CodeGenVisitor::visitWriteExpr(AslParser::WriteExprContext *ctx) {
     else if (Types.isCharacterTy(tid1))
         code2 = instruction::WRITEC(addr1);
     else if (Types.isBooleanTy(tid1)) {
-        std::string temp1 = "%" + codeCounters.newTEMP();
-        code2 = instruction::NOT(temp1, addr1);
-        code2 = code2 || instruction::WRITEI(temp1);
+        code2 = code2 || instruction::WRITEI(addr1);
     }
     instructionList finalCode = code1 || code2;
     DEBUG_EXIT();
@@ -344,7 +356,7 @@ CodeGenVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx) {
     if (op == "-") {
         code = code || instruction::NEG(temp, addr);
     } else {
-        // TODO
+        code = code || instruction::NOT(temp, addr);
     }
 
     CodeAttribs codAts(temp, "", code);
@@ -414,6 +426,58 @@ std::any CodeGenVisitor::visitArithmetic(AslParser::ArithmeticContext *ctx) {
     return codAts;
 }
 
+std::any CodeGenVisitor::visitNot(AslParser::NotContext *ctx) {
+    DEBUG_ENTER();
+    CodeAttribs codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    std::string temp = "%" + codeCounters.newTEMP();
+
+    instructionList code = codAt.code || instruction::NOT(temp, codAt.addr);
+
+    CodeAttribs codAts(temp, "", code);
+    DEBUG_EXIT();
+    return codAts;
+}
+
+std::any CodeGenVisitor::visitLogicalAnd(AslParser::LogicalAndContext *ctx) {
+    DEBUG_ENTER();
+    CodeAttribs &&codAtexpr1 = std::any_cast<CodeAttribs>(visit(ctx->expr(0)));
+    CodeAttribs &&codAtexpr2 = std::any_cast<CodeAttribs>(visit(ctx->expr(1)));
+
+    instructionList &expr1 = codAtexpr1.code;
+    instructionList &expr2 = codAtexpr2.code;
+
+    std::string addr1 = codAtexpr1.addr;
+    std::string addr2 = codAtexpr2.addr;
+
+    std::string tmp = "%" + codeCounters.newTEMP();
+    instructionList &&code = expr1 || expr2;
+    code = code || instruction::AND(tmp, addr1, addr2);
+
+    CodeAttribs codAts(tmp, "", code);
+    DEBUG_EXIT();
+    return codAts;
+}
+
+std::any CodeGenVisitor::visitLogicalOr(AslParser::LogicalOrContext *ctx) {
+    DEBUG_ENTER();
+    CodeAttribs &&codAtexpr1 = std::any_cast<CodeAttribs>(visit(ctx->expr(0)));
+    CodeAttribs &&codAtexpr2 = std::any_cast<CodeAttribs>(visit(ctx->expr(1)));
+
+    instructionList &expr1 = codAtexpr1.code;
+    instructionList &expr2 = codAtexpr2.code;
+
+    std::string addr1 = codAtexpr1.addr;
+    std::string addr2 = codAtexpr2.addr;
+
+    std::string tmp = "%" + codeCounters.newTEMP();
+    instructionList &&code = expr1 || expr2;
+    code = code || instruction::OR(tmp, addr1, addr2);
+
+    CodeAttribs codAts(tmp, "", code);
+    DEBUG_EXIT();
+    return codAts;
+}
+
 std::any CodeGenVisitor::visitRelational(AslParser::RelationalContext *ctx) {
     DEBUG_ENTER();
     CodeAttribs &&codAt1 = std::any_cast<CodeAttribs>(visit(ctx->expr(0)));
@@ -424,16 +488,34 @@ std::any CodeGenVisitor::visitRelational(AslParser::RelationalContext *ctx) {
     instructionList &code2 = codAt2.code;
     instructionList &&code = code1 || code2;
 
+    TypesMgr::TypeId typeExpr1 = getTypeDecor(ctx->expr(0));
+    TypesMgr::TypeId typeExpr2 = getTypeDecor(ctx->expr(1));
+
     std::string op = ctx->op->getText();
     std::string temp = "%" + codeCounters.newTEMP();
     std::string temp1 = "%" + codeCounters.newTEMP();
     if (op == "==")
         code = code || instruction::EQ(temp, addr1, addr2);
-    else if (op == "<=")
-        code = code || instruction::LE(temp1, addr1, addr2);
     else if (op == "<")
         code = code || instruction::LT(temp, addr1, addr2);
-    else if (op == "!=") {
+    else if (op == "<=") {
+        if (Types.isNumericTy(typeExpr1) && Types.isNumericTy(typeExpr2)) {
+            if ((Types.isIntegerTy(typeExpr1) && Types.isIntegerTy(typeExpr2)))
+                code = code || instruction::LE(temp, addr1, addr2);
+            else if (Types.isFloatTy(typeExpr1) && Types.isFloatTy(typeExpr2))
+                code = code || instruction::FLE(temp, addr1, addr2);
+            else if (Types.isIntegerTy(typeExpr1) &&
+                     !Types.isIntegerTy(typeExpr2)) {
+                code = code || instruction::FLOAT(temp1, addr1);
+                code = code || instruction::FLE(temp, temp1, addr2);
+            } else if (!Types.isIntegerTy(typeExpr1) &&
+                       Types.isIntegerTy(typeExpr2)) {
+                code = code || instruction::FLOAT(temp1, addr2);
+                code = code || instruction::FLE(temp, addr1, temp1);
+            }
+        } else
+            code = code || instruction::LE(temp, addr1, addr2);
+    } else if (op == "!=") {
         code = code || instruction::EQ(temp1, addr1, addr2);
         code = code || instruction::NOT(temp, temp1);
     } else if (op == ">") {

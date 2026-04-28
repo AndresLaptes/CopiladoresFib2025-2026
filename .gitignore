@@ -3,6 +3,7 @@ main
 /CL-lab/practica/asl/asl
 *.o
 **/common/*.o
+*.t
 
 # --- ANTLR: Ignorar TODO lo generado (C++ y Java) ---
 # Esta regla ignora archivos que ANTLR suele generar automáticamente,
