@@ -39,7 +39,7 @@
 #include "antlr4-runtime.h"
 
 // uncomment the following line to enable debugging messages with DEBUG*
-//#define DEBUG_BUILD
+//  #define DEBUG_BUILD
 #include "../common/debug.h"
 
 // using namespace std;
@@ -193,18 +193,24 @@ std::any CodeGenVisitor::visitStatements(AslParser::StatementsContext *ctx) {
 std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
     DEBUG_ENTER();
     instructionList code;
-    CodeAttribs &&codAtsE1 =
-        std::any_cast<CodeAttribs>(visit(ctx->left_expr()));
+
+    CodeAttribs codAtsE1 = std::any_cast<CodeAttribs>(visit(ctx->left_expr()));
     std::string addr1 = codAtsE1.addr;
-    // std::string           offs1 = codAtsE1.offs;
-    instructionList &code1 = codAtsE1.code;
-    // TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
-    CodeAttribs &&codAtsE2 = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    std::string offs1 = codAtsE1.offs;
+    instructionList code1 = codAtsE1.code;
+
+    CodeAttribs codAtsE2 = std::any_cast<CodeAttribs>(visit(ctx->expr()));
     std::string addr2 = codAtsE2.addr;
-    // std::string           offs2 = codAtsE2.offs;
-    instructionList &code2 = codAtsE2.code;
-    // TypesMgr::TypeId tid2 = getTypeDecor(ctx->expr());
-    code = code1 || code2 || instruction::LOAD(addr1, addr2);
+    instructionList code2 = codAtsE2.code;
+
+    if (offs1 != "") {
+        // Si hay offset, es una escritura en array: addr1[offs1] = addr2
+        code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
+    } else {
+        // Si el offset está vacío, es una asignación normal: addr1 = addr2
+        code = code1 || code2 || instruction::LOAD(addr1, addr2);
+    }
+
     DEBUG_EXIT();
     return code;
 }
@@ -330,9 +336,31 @@ std::any CodeGenVisitor::visitWriteString(AslParser::WriteStringContext *ctx) {
     return code;
 }
 
+// Esto devuelve un puntero
 std::any CodeGenVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
     DEBUG_ENTER();
     CodeAttribs &&codAts = std::any_cast<CodeAttribs>(visit(ctx->ident()));
+
+    if (ctx->expr()) {
+        CodeAttribs codeAtsExpr =
+            std::any_cast<CodeAttribs>(visit(ctx->expr()));
+
+        // Pedir el tamaño del ELEMENTO , no del array
+        TypesMgr::TypeId elemType = getTypeDecor(ctx);
+        std::size_t elemSize = Types.getSizeOfType(elemType);
+
+        std::string tmpOffset = "%" + codeCounters.newTEMP();
+        instructionList code = codAts.code || codeAtsExpr.code;
+
+        code = code || instruction::MUL(tmpOffset, codeAtsExpr.addr,
+                                        std::to_string(elemSize));
+
+        // Devuelve la dirección base y el offset por separado
+        // codAtsADDR[tmpOffset]
+        DEBUG_EXIT();
+        return CodeAttribs(codAts.addr, tmpOffset, code);
+    }
+
     DEBUG_EXIT();
     return codAts;
 }

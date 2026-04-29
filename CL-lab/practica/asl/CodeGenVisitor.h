@@ -85,6 +85,7 @@ class CodeGenVisitor final : public AslBaseVisitor {
     std::any visitLogicalAnd(AslParser::LogicalAndContext *ctx);
     std::any visitLogicalOr(AslParser::LogicalOrContext *ctx);
     std::any visitNot(AslParser::NotContext *ctx);
+    // std::any visitArrayType(AslParser::ArrayTypeContext *ctx);
 
   private:
     // Attributes
