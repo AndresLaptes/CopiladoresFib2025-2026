@@ -71,6 +71,7 @@ class CodeGenVisitor final : public AslBaseVisitor {
     std::any visitWriteExpr(AslParser::WriteExprContext *ctx);
     std::any visitWriteString(AslParser::WriteStringContext *ctx);
     std::any visitLeft_expr(AslParser::Left_exprContext *ctx);
+    std::any visitArrayAccessExpr(AslParser::ArrayAccessExprContext *ctx);
     std::any visitExprIdent(AslParser::ExprIdentContext *ctx);
     std::any visitArithmetic(AslParser::ArithmeticContext *ctx);
     std::any visitRelational(AslParser::RelationalContext *ctx);
