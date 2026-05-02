@@ -56,7 +56,7 @@ variable_decl
         ;
 
 type
-        : basicType                           #typeBasic
+        : basicType                             #typeBasic
         | ARRAY '[' INTVAL ']' OF basicType     # arrayType
         ;
 
