@@ -30,6 +30,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "../common/SymTable.h"
 #include "../common/TreeDecoration.h"
@@ -89,6 +90,8 @@ class CodeGenVisitor final : public AslBaseVisitor {
     // std::any visitArrayType(AslParser::ArrayTypeContext *ctx);
 
   private:
+    class CodeAttribs;
+
     // Attributes
     TypesMgr &Types;
     SymTable &Symbols;
@@ -105,6 +108,9 @@ class CodeGenVisitor final : public AslBaseVisitor {
     //   Scope and Type
     SymTable::ScopeId getScopeDecor(antlr4::ParserRuleContext *ctx) const;
     TypesMgr::TypeId getTypeDecor(antlr4::ParserRuleContext *ctx) const;
+    CodeAttribs functionCall(
+        const std::string &name,
+        const std::vector<AslParser::ExprContext *> &args, bool discardResult);
 
     //////////////////////////////////////////////////////////////////
     // Class CodeAttribs: is declared inside CodeGenVisitor as an
