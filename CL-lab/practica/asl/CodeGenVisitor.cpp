@@ -201,17 +201,24 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
     std::string addr1 = codAtsE1.addr;
     std::string offs1 = codAtsE1.offs;
     instructionList code1 = codAtsE1.code;
+    TypesMgr::TypeId typeE1 = getTypeDecor(ctx->left_expr());
 
     CodeAttribs codAtsE2 = std::any_cast<CodeAttribs>(visit(ctx->expr()));
     std::string addr2 = codAtsE2.addr;
     instructionList code2 = codAtsE2.code;
+    TypesMgr::TypeId typeE2 = getTypeDecor(ctx->expr());
 
+    code = code1 || code2;
     if (offs1 != "") {
         // Si hay offset, es una escritura en array: addr1[offs1] = addr2
-        code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
+        code = code || instruction::XLOAD(addr1, offs1, addr2);
     } else {
         // Si el offset está vacío, es una asignación normal: addr1 = addr2
-        code = code1 || code2 || instruction::LOAD(addr1, addr2);
+        if (Types.isFloatTy(typeE1) and Types.isIntegerTy(typeE2)) {
+            std::string temp1 = "%" + codeCounters.newTEMP();
+            code = code || instruction::FLOAT(temp1, addr2);
+            code = code || instruction::LOAD(addr1, temp1);
+        } else code = code || instruction::LOAD(addr1, addr2);
     }
 
     DEBUG_EXIT();
@@ -337,12 +344,27 @@ std::any CodeGenVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
 std::any CodeGenVisitor::visitReadStmt(AslParser::ReadStmtContext *ctx) {
     DEBUG_ENTER();
     CodeAttribs &&codAtsE = std::any_cast<CodeAttribs>(visit(ctx->left_expr()));
-    std::string addr1 = codAtsE.addr;
-    // std::string          offs1 = codAtsE.offs;
-    instructionList &code1 = codAtsE.code;
-    instructionList &code = code1;
-    // TypesMgr::TypeId tid1 = getTypeDecor(ctx->left_expr());
-    code = code1 || instruction::READI(addr1);
+    TypesMgr::TypeId typeExpr = getTypeDecor(ctx->left_expr());
+    std::string addr = codAtsE.addr;
+    std::string dest = codAtsE.addr;
+
+    instructionList &code = codAtsE.code; 
+    if (codAtsE.offs != "") {
+        dest = "%" + codeCounters.newTEMP();
+    }
+
+    if (Types.isIntegerTy(typeExpr) || Types.isBooleanTy(typeExpr)) {
+        code = code || instruction::READI(dest);
+    } else if (Types.isCharacterTy(typeExpr)) {
+        code = code || instruction::READC(dest);
+    } else if (Types.isFloatTy(typeExpr)) {
+        code = code || instruction::READF(dest);
+    }
+
+    if (codAtsE.offs != "") {
+        code = code || instruction::XLOAD(codAtsE.addr, codAtsE.offs, dest);
+    }
+
     DEBUG_EXIT();
     return code;
 }
@@ -439,13 +461,18 @@ std::any
 CodeGenVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx) {
     DEBUG_ENTER();
     CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
+    TypesMgr::TypeId typeExpr = getTypeDecor(ctx->expr());
     std::string addr = codAt.addr;
     std::string op = ctx->op->getText();
 
     std::string temp = "%" + codeCounters.newTEMP();
     instructionList &code = codAt.code;
     if (op == "-") {
-        code = code || instruction::NEG(temp, addr);
+        if (Types.isFloatTy(typeExpr)) {
+            code = code || instruction::FNEG(temp, addr);
+        } else {
+            code = code || instruction::NEG(temp, addr);  
+        }
     } else {
         code = code || instruction::NOT(temp, addr);
     }
