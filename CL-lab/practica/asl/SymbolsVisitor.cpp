@@ -120,7 +120,7 @@ std::any SymbolsVisitor::visitParametrosFuncion(
         if (Symbols.findInCurrentScope(name))
             Errors.declaredIdent(ctx->ID(i));
         else
-            Symbols.addLocalVar(name, type);
+            Symbols.addParameter(name, type);
     }
 
     DEBUG_EXIT();

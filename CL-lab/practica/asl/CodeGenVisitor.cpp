@@ -247,6 +247,14 @@ CodeGenVisitor::CodeAttribs CodeGenVisitor::functionCall(
 
         std::string argAddr = codAt.addr;
         TypesMgr::TypeId tArg = getTypeDecor(exprCtx);
+
+        if (i < paramTypes.size() and Types.isArrayTy(paramTypes[i])) {
+            std::string tmpAddr = "%" + codeCounters.newTEMP();
+            code = code || instruction::ALOAD(tmpAddr, argAddr);
+            code = code || instruction::PUSH(tmpAddr);
+            continue;
+        }
+
         if (i < paramTypes.size() and Types.isFloatTy(paramTypes[i]) and
             Types.isIntegerTy(tArg)) {
             std::string tmpFloat = "%" + codeCounters.newTEMP();
@@ -675,7 +683,17 @@ std::any CodeGenVisitor::visitExprIdent(AslParser::ExprIdentContext *ctx) {
 
 std::any CodeGenVisitor::visitIdent(AslParser::IdentContext *ctx) {
     DEBUG_ENTER();
-    CodeAttribs codAts(ctx->ID()->getText(), "", instructionList());
+    std::string name = ctx->ID()->getText();
+    TypesMgr::TypeId tIdent = getTypeDecor(ctx);
+
+    if (Symbols.isParameterClass(name) and Types.isArrayTy(tIdent)) {
+        std::string tmpAddr = "%" + codeCounters.newTEMP();
+        instructionList code = instruction::LOAD(tmpAddr, name);
+        DEBUG_EXIT();
+        return CodeAttribs(tmpAddr, "", code);
+    }
+
+    CodeAttribs codAts(name, "", instructionList());
     DEBUG_EXIT();
     return codAts;
 }
