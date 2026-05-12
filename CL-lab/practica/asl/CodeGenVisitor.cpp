@@ -205,22 +205,62 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
     CodeAttribs codAtsE2 = std::any_cast<CodeAttribs>(visit(ctx->expr()));
     std::string addr2 = codAtsE2.addr;
     instructionList code2 = codAtsE2.code;
+    std::string offs2 = codAtsE2.offs;
     TypesMgr::TypeId tLeft = getTypeDecor(ctx->left_expr());
     TypesMgr::TypeId tRight = getTypeDecor(ctx->expr());
+
+    bool arrayAssign = Types.isArrayTy(tLeft) and Types.isArrayTy(tRight);
 
     if (Types.isFloatTy(tLeft) and Types.isIntegerTy(tRight)) {
         std::string tmpFloat = "%" + codeCounters.newTEMP();
         code2 = code2 || instruction::FLOAT(tmpFloat, addr2);
         addr2 = tmpFloat;
+    } else if (arrayAssign) {
+        code = code1 || code2;
+        
+        int numElems = Types.getArraySize(tLeft);
+        int elemSize = Types.getSizeOfType(Types.getArrayElemType(tLeft));
+
+        std::string loopStart = "L" + codeCounters.newLabelWHILE();
+        std::string loopEnd = "L" + codeCounters.newLabelWHILE();
+        std::string idx = "%" + codeCounters.newTEMP();
+
+        code = code || instruction::ILOAD(idx, "0");
+        code = code || instruction::LABEL(loopStart);
+        std::string cond = "%" + codeCounters.newTEMP();
+        code = code || instruction::LT(cond, idx, std::to_string(numElems));
+        code = code || instruction::FJUMP(cond, loopEnd);
+        std::string offsetTmp = "%" + codeCounters.newTEMP();
+        code = code || instruction::MUL(offsetTmp, idx, std::to_string(elemSize));
+        std::string valTmp = "%" + codeCounters.newTEMP();
+        if (offs2 == "*") { 
+            std::string ptrSrc = "%" + codeCounters.newTEMP();
+            code = code || instruction::ADD(ptrSrc, addr2, offsetTmp);
+            code = code || instruction::LOADC(valTmp, ptrSrc);
+        } else { 
+            code = code || instruction::LOADX(valTmp, addr2, offsetTmp);
+        }
+
+        if (offs1 == "*") { 
+            std::string ptrDst = "%" + codeCounters.newTEMP();
+            code = code || instruction::ADD(ptrDst, addr1, offsetTmp);
+            code = code || instruction::CLOAD(ptrDst, valTmp);
+        } else { 
+            code = code || instruction::XLOAD(addr1, offsetTmp, valTmp);
+        }
+
+        code = code || instruction::ADD(idx, idx, "1");
+        code = code || instruction::UJUMP(loopStart);
+        code = code || instruction::LABEL(loopEnd);
     }
 
-    if (offs1 != "") {
+    if (offs1 != "" and not arrayAssign) {
         // Si hay offset, es una escritura en array: addr1[offs1] = addr2
         code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
-    } else {
+    } else if (not arrayAssign) {
         // Si el offset está vacío, es una asignación normal: addr1 = addr2
         code = code1 || code2 || instruction::LOAD(addr1, addr2);
-    }
+    }   
 
     DEBUG_EXIT();
     return code;
