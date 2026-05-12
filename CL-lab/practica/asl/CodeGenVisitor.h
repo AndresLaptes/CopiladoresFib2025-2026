@@ -108,9 +108,9 @@ class CodeGenVisitor final : public AslBaseVisitor {
     //   Scope and Type
     SymTable::ScopeId getScopeDecor(antlr4::ParserRuleContext *ctx) const;
     TypesMgr::TypeId getTypeDecor(antlr4::ParserRuleContext *ctx) const;
-    CodeAttribs functionCall(
-        const std::string &name,
-        const std::vector<AslParser::ExprContext *> &args, bool discardResult);
+    CodeAttribs functionCall(const std::string &name,
+                             const std::vector<AslParser::ExprContext *> &args,
+                             bool discardResult);
 
     //////////////////////////////////////////////////////////////////
     // Class CodeAttribs: is declared inside CodeGenVisitor as an

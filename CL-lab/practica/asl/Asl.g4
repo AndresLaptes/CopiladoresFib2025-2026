@@ -44,7 +44,7 @@ function
 // IMPORTANT: Adding something here may break SymbolsVisitor::VisitFunction -> dynamic_cast<AslParser::ParametrosFuncionContext *>
 // Make sure to check if needed to add something here.
 funParDeclaration 
-        : ID ':' type (',' ID ':' type)* # parametrosFuncion
+        : ID ':' type (',' ID ':' type)*  # parametrosFuncion
         ; 
 
 declarations

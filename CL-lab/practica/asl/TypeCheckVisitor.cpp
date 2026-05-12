@@ -267,8 +267,6 @@ std::any TypeCheckVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
     visit(ctx->ident());
     TypesMgr::TypeId tFunc = getTypeDecor(ctx->ident());
 
-    uint numeroParametros = ctx->expr().size();
-
     for (auto argCtx : ctx->expr())
         visit(argCtx);
 

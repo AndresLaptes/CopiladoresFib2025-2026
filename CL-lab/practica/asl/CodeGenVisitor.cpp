@@ -201,7 +201,6 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
     std::string addr1 = codAtsE1.addr;
     std::string offs1 = codAtsE1.offs;
     instructionList code1 = codAtsE1.code;
-    TypesMgr::TypeId typeE1 = getTypeDecor(ctx->left_expr());
 
     CodeAttribs codAtsE2 = std::any_cast<CodeAttribs>(visit(ctx->expr()));
     std::string addr2 = codAtsE2.addr;
@@ -215,26 +214,22 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
         addr2 = tmpFloat;
     }
 
-    code = code1 || code2;
     if (offs1 != "") {
         // Si hay offset, es una escritura en array: addr1[offs1] = addr2
-        code = code || instruction::XLOAD(addr1, offs1, addr2);
+        code = code1 || code2 || instruction::XLOAD(addr1, offs1, addr2);
     } else {
         // Si el offset está vacío, es una asignación normal: addr1 = addr2
-        if (Types.isFloatTy(typeE1) and Types.isIntegerTy(typeE2)) {
-            std::string temp1 = "%" + codeCounters.newTEMP();
-            code = code || instruction::FLOAT(temp1, addr2);
-            code = code || instruction::LOAD(addr1, temp1);
-        } else code = code || instruction::LOAD(addr1, addr2);
+        code = code1 || code2 || instruction::LOAD(addr1, addr2);
     }
 
     DEBUG_EXIT();
     return code;
 }
 
-CodeGenVisitor::CodeAttribs CodeGenVisitor::functionCall(
-    const std::string &name, const std::vector<AslParser::ExprContext *> &args,
-    bool discardResult) {
+CodeGenVisitor::CodeAttribs
+CodeGenVisitor::functionCall(const std::string &name,
+                             const std::vector<AslParser::ExprContext *> &args,
+                             bool discardResult) {
     instructionList code;
     TypesMgr::TypeId tFunc = Symbols.getType(name);
     bool hasReturnValue =
@@ -322,14 +317,16 @@ std::any CodeGenVisitor::visitIfStmt(AslParser::IfStmtContext *ctx) {
 
 std::any CodeGenVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
     DEBUG_ENTER();
-    CodeAttribs callAts = functionCall(ctx->ident()->getText(), ctx->expr(), true);
+    CodeAttribs callAts =
+        functionCall(ctx->ident()->getText(), ctx->expr(), true);
     DEBUG_EXIT();
     return callAts.code;
 }
 
 std::any CodeGenVisitor::visitExprFunc(AslParser::ExprFuncContext *ctx) {
     DEBUG_ENTER();
-    CodeAttribs codAts = functionCall(ctx->ident()->getText(), ctx->expr(), false);
+    CodeAttribs codAts =
+        functionCall(ctx->ident()->getText(), ctx->expr(), false);
     DEBUG_EXIT();
     return codAts;
 }
@@ -434,8 +431,8 @@ CodeGenVisitor::visitArrayAccessExpr(AslParser::ArrayAccessExprContext *ctx) {
     std::string tmpValue = "%" + codeCounters.newTEMP();
     instructionList code = arrayAddr.code || indexVal.code;
 
-    code = code || instruction::MUL(tmpOffset, indexVal.addr,
-                                    std::to_string(elemSize));
+    code = code ||
+           instruction::MUL(tmpOffset, indexVal.addr, std::to_string(elemSize));
     code = code || instruction::LOADX(tmpValue, arrayAddr.addr, tmpOffset);
 
     DEBUG_EXIT();
@@ -453,7 +450,6 @@ std::any
 CodeGenVisitor::visitUnaryOperator(AslParser::UnaryOperatorContext *ctx) {
     DEBUG_ENTER();
     CodeAttribs &&codAt = std::any_cast<CodeAttribs>(visit(ctx->expr()));
-    TypesMgr::TypeId typeExpr = getTypeDecor(ctx->expr());
     std::string addr = codAt.addr;
     std::string op = ctx->op->getText();
     TypesMgr::TypeId tExpr = getTypeDecor(ctx->expr());
@@ -600,9 +596,9 @@ std::any CodeGenVisitor::visitRelational(AslParser::RelationalContext *ctx) {
 
     TypesMgr::TypeId typeExpr1 = getTypeDecor(ctx->expr(0));
     TypesMgr::TypeId typeExpr2 = getTypeDecor(ctx->expr(1));
-    bool useFloatCmp = Types.isNumericTy(typeExpr1) &&
-                       Types.isNumericTy(typeExpr2) &&
-                       (Types.isFloatTy(typeExpr1) || Types.isFloatTy(typeExpr2));
+    bool useFloatCmp =
+        Types.isNumericTy(typeExpr1) && Types.isNumericTy(typeExpr2) &&
+        (Types.isFloatTy(typeExpr1) || Types.isFloatTy(typeExpr2));
 
     std::string leftAddr = addr1;
     std::string rightAddr = addr2;
