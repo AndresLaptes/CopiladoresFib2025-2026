@@ -217,7 +217,7 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
         addr2 = tmpFloat;
     } else if (arrayAssign) {
         code = code1 || code2;
-        
+
         int numElems = Types.getArraySize(tLeft);
         int elemSize = Types.getSizeOfType(Types.getArrayElemType(tLeft));
 
@@ -231,21 +231,22 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
         code = code || instruction::LT(cond, idx, std::to_string(numElems));
         code = code || instruction::FJUMP(cond, loopEnd);
         std::string offsetTmp = "%" + codeCounters.newTEMP();
-        code = code || instruction::MUL(offsetTmp, idx, std::to_string(elemSize));
+        code =
+            code || instruction::MUL(offsetTmp, idx, std::to_string(elemSize));
         std::string valTmp = "%" + codeCounters.newTEMP();
-        if (offs2 == "*") { 
+        if (offs2 == "*") {
             std::string ptrSrc = "%" + codeCounters.newTEMP();
             code = code || instruction::ADD(ptrSrc, addr2, offsetTmp);
             code = code || instruction::LOADC(valTmp, ptrSrc);
-        } else { 
+        } else {
             code = code || instruction::LOADX(valTmp, addr2, offsetTmp);
         }
 
-        if (offs1 == "*") { 
+        if (offs1 == "*") {
             std::string ptrDst = "%" + codeCounters.newTEMP();
             code = code || instruction::ADD(ptrDst, addr1, offsetTmp);
             code = code || instruction::CLOAD(ptrDst, valTmp);
-        } else { 
+        } else {
             code = code || instruction::XLOAD(addr1, offsetTmp, valTmp);
         }
 
@@ -260,7 +261,7 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
     } else if (not arrayAssign) {
         // Si el offset está vacío, es una asignación normal: addr1 = addr2
         code = code1 || code2 || instruction::LOAD(addr1, addr2);
-    }   
+    }
 
     DEBUG_EXIT();
     return code;
@@ -290,9 +291,13 @@ CodeGenVisitor::functionCall(const std::string &name,
         TypesMgr::TypeId tArg = getTypeDecor(exprCtx);
 
         if (i < paramTypes.size() and Types.isArrayTy(paramTypes[i])) {
-            std::string tmpAddr = "%" + codeCounters.newTEMP();
-            code = code || instruction::ALOAD(tmpAddr, argAddr);
-            code = code || instruction::PUSH(tmpAddr);
+            if (!argAddr.empty() && argAddr[0] == '%') {
+                code = code || instruction::PUSH(argAddr);
+            } else {
+                std::string tmpAddr = "%" + codeCounters.newTEMP();
+                code = code || instruction::ALOAD(tmpAddr, argAddr);
+                code = code || instruction::PUSH(tmpAddr);
+            }
             continue;
         }
 
