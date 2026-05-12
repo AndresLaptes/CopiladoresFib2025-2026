@@ -666,9 +666,13 @@ std::any CodeGenVisitor::visitValue(AslParser::ValueContext *ctx) {
             code = instruction::ILOAD(temp, "1");
         else
             code = instruction::ILOAD(temp, "0");
-    } else if (Types.isCharacterTy(type))
-        code = instruction::CLOAD(temp, ctx->getText());
-    else if (Types.isFloatTy(type))
+    } else if (Types.isCharacterTy(type)) {
+        std::string rawText = ctx->getText();
+        std::string charValue = rawText.substr(1, rawText.length() - 2);
+
+        code = instruction::CHLOAD(temp, charValue);
+
+    } else if (Types.isFloatTy(type))
         code = instruction::FLOAD(temp, ctx->getText());
     else
         code = instruction::ILOAD(temp, ctx->getText());
