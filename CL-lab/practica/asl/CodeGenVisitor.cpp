@@ -209,17 +209,26 @@ std::any CodeGenVisitor::visitAssignStmt(AslParser::AssignStmtContext *ctx) {
     TypesMgr::TypeId typeE2 = getTypeDecor(ctx->expr());
 
     code = code1 || code2;
-    if (offs1 != "") {
-        // Si hay offset, es una escritura en array: addr1[offs1] = addr2
-        code = code || instruction::XLOAD(addr1, offs1, addr2);
-    } else {
-        // Si el offset está vacío, es una asignación normal: addr1 = addr2
-        if (Types.isFloatTy(typeE1) and Types.isIntegerTy(typeE2)) {
-            std::string temp1 = "%" + codeCounters.newTEMP();
-            code = code || instruction::FLOAT(temp1, addr2);
-            code = code || instruction::LOAD(addr1, temp1);
-        } else
-            code = code || instruction::LOAD(addr1, addr2);
+    std::string finalAddr2 = addr2;
+    if (Types.isFloatTy(typeE1) and Types.isIntegerTy(typeE2)) {
+        std::string temp1 = "%" + codeCounters.newTEMP();
+        code = code || instruction::FLOAT(temp1, addr2);
+        finalAddr2 = temp1;
+    }
+
+    // +++ INICIO AÑADIDO / MODIFICADO +++
+    if (offs1 == "*") {
+        // Es un puntero (parámetro array). Usamos CLOAD: *addr1 = finalAddr2
+        // Nota: Asegúrate de que tienes 'CLOAD' en tu clase 'instruction'
+        code = code || instruction::CLOAD(addr1, finalAddr2); 
+    } 
+    else if (offs1 != "") {
+        // Si hay offset y no es "*", es una escritura en array local: addr1[offs1] = finalAddr2
+        code = code || instruction::XLOAD(addr1, offs1, finalAddr2);
+    } 
+    else {
+        // Si el offset está vacío, es una asignación escalar normal: addr1 = finalAddr2
+        code = code || instruction::LOAD(addr1, finalAddr2);
     }
 
     DEBUG_EXIT();
@@ -289,9 +298,17 @@ std::any CodeGenVisitor::visitProcCall(AslParser::ProcCallContext *ctx) {
             argAddr = tmpFloat;
         }
 
-        argAddrs.push_back(argAddr);
-        isArrayArg.push_back(Types.isArrayTy(tArg));
-        code = code || instruction::PUSH(argAddr);
+        TypesMgr::TypeId paramType = Types.getParameterType(funcType, i);
+
+if (Types.isArrayTy(paramType)) {
+    // Pasar por referencia: empujar la dirección del array
+    std::string temp = "%" + codeCounters.newTEMP();
+    code = code || instruction::ALOAD(temp, codAt.addr);
+    code = code || instruction::PUSH(temp);
+} else {
+    // Pasar por valor: empujar el valor directamente
+    code = code || instruction::PUSH(codAt.addr);
+}
     }
 
     code = code || instruction::CALL(name);
@@ -375,7 +392,12 @@ std::any CodeGenVisitor::visitReadStmt(AslParser::ReadStmtContext *ctx) {
         code = code || instruction::READF(dest);
     }
 
-    if (codAtsE.offs != "") {
+    if (codAtsE.offs == "*") {
+        // Es un parámetro (puntero). Escribimos el valor leído (dest) en la dirección apuntada (addr).
+        code = code || instruction::CLOAD(codAtsE.addr, dest);
+    }
+    else if (codAtsE.offs != "") {
+        // Es un array local (comportamiento original).
         code = code || instruction::XLOAD(codAtsE.addr, codAtsE.offs, dest);
     }
 
@@ -433,6 +455,19 @@ std::any CodeGenVisitor::visitLeft_expr(AslParser::Left_exprContext *ctx) {
         code = code || instruction::MUL(tmpOffset, codeAtsExpr.addr,
                                         std::to_string(elemSize));
 
+        std::string idName = ctx->ident()->getText();
+        
+        if (Symbols.isParameterClass(idName)) {
+            // Es un parámetro de tipo array (puntero a memoria)
+            std::string ptrTmp = "%" + codeCounters.newTEMP();
+            
+            // Sumamos la dirección base y el offset (Ajusta 'ADD' si tu instrucción se llama diferente, ej. ADDI)
+            code = code || instruction::ADD(ptrTmp, codAts.addr, tmpOffset);
+            
+            DEBUG_EXIT();
+            // Retornamos el puntero calculado y la marca "*" como offset
+            return CodeAttribs(ptrTmp, "*", code);
+        }
         // Devuelve la dirección base y el offset por separado
         // codAtsADDR[tmpOffset]
         DEBUG_EXIT();
@@ -458,7 +493,21 @@ CodeGenVisitor::visitArrayAccessExpr(AslParser::ArrayAccessExprContext *ctx) {
 
     code = code ||
            instruction::MUL(tmpOffset, indexVal.addr, std::to_string(elemSize));
-    code = code || instruction::LOADX(tmpValue, arrayAddr.addr, tmpOffset);
+    std::string idName = ctx->ident()->getText();
+
+    if (Symbols.isParameterClass(idName)) {
+        // Es un parámetro (puntero). 
+        // 1. Calculamos la dirección de memoria exacta: base + offset
+        std::string ptrTmp = "%" + codeCounters.newTEMP();
+        code = code || instruction::ADD(ptrTmp, arrayAddr.addr, tmpOffset);
+        
+        // 2. Leemos desde la dirección apuntada (LOADC)
+        // Nota: Asegúrate de que tienes 'LOADC' en tu clase 'instruction'
+        code = code || instruction::LOADC(tmpValue, ptrTmp);
+    } else {
+        // Es un array local (tu comportamiento original con LOADX)
+        code = code || instruction::LOADX(tmpValue, arrayAddr.addr, tmpOffset);
+    }
 
     DEBUG_EXIT();
     return CodeAttribs(tmpValue, "", code);
